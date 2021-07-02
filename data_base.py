@@ -1,4 +1,6 @@
 import sqlite3
+from adverticement import Adverticement
+from query import Query
 
 conn = sqlite3.connect('users.sql', check_same_thread=False)
 
@@ -57,3 +59,19 @@ def addToFavourite(advertisement):
 def addToQueriesHistory(query):
     curr.execute("INSERT INTO favourites VALUES(?,?,?,?,?,?,?,?);", query)
     conn.commit()
+
+def getFavourites(userid):
+    curr.execute("SELECT * FROM FAVOURITES WHERE user = ?;", userid)
+    records = curr.fetchall()
+    recordslist = list(Adverticement)
+    for row in records:
+        recordslist.append(Adverticement(row[3], row[4], row[2]))
+    return recordslist
+
+def getQuriesHistory(userid):
+    curr.execute("SELECT * FROM queries WHERE id = ?;", userid)
+    records = curr.fetchall()
+    recordslist = list(Query)
+    for row in records:
+        recordslist.append(Query(row[2], row[7], row[5], row[3], row[4], row[6]))
+    return recordslist
