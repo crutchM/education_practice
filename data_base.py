@@ -24,7 +24,6 @@ curr.execute("""
         link TEXT NOT NULL,
         price INT,
         name TEXT,
-        statement BOOLEAN,
         FOREIGN KEY (user) REFERENCES users(id)
     ); 
 """)
@@ -52,7 +51,7 @@ def addUser(user):
     conn.commit()
 
 def addToFavourite(advertisement):
-    curr.execute("INSERT INTO favourites VALUES(?,?,?,?,?,?);", advertisement)
+    curr.execute("INSERT INTO favourites VALUES(?,?,?,?,?);", advertisement)
     conn.commit()
 
 def addToQueriesHistory(query):
