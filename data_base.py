@@ -55,7 +55,10 @@ curr.execute("""
         region TEXT,
         avg_price INT,
         cdate DATE
-    )""")
+    );
+    """)
+
+conn.commit()
 
 def addUser(user):
     curr.execute("INSERT INTO users VALUES(?,?,?,?,?);", user)
