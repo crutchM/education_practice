@@ -42,11 +42,20 @@ curr.execute("""
         filter_saller_rate DOUBLE,
         sort_type INT,
         query TEXT, 
+        vdate DATE,
         FOREIGN KEY (user) REFERENCES users(id)     
     );
 """)
 
 conn.commit()
+
+curr.execute("""
+    CREATE TABLE IF NOT EXISTS chipStat(
+        chip_name TEXT PRIMARY KEY,
+        region TEXT,
+        avg_price INT,
+        cdate DATE
+    )""")
 
 def addUser(user):
     curr.execute("INSERT INTO users VALUES(?,?,?,?,?);", user)
@@ -75,3 +84,11 @@ def getQuriesHistory(userid):
     for row in records:
         recordslist.append(Query(row[2], row[7], row[5], row[3], row[4], row[6]))
     return recordslist
+
+def getVisits(date):
+    curr.execute("SELECT id FROM queries where  CAST(strftime(%s, vdate) AS INTEGER ) = CAST(strftime(%s, ?) AS INTEGER );", date)
+    i = 0
+    records = curr.fetchall()
+    for row in records:
+        i += 1
+    return i
