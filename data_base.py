@@ -89,9 +89,9 @@ def getQuriesHistory(userid):
     return recordslist
 
 def getVisits(date):
-    curr.execute("SELECT id FROM queries where  CAST(strftime(%s, vdate) AS INTEGER ) = CAST(strftime(%s, ?) AS INTEGER );", date)
-    i = 0
+    curr.execute("SELECT q.vdate, count(*) FROM queries q group by q.vdate;")
     records = curr.fetchall()
+    stat = dict(date, int)
     for row in records:
-        i += 1
-    return i
+        stat.update(row[0], row[1])
+    return stat
