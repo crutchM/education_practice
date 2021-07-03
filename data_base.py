@@ -88,7 +88,7 @@ def getQuriesHistory(userid):
         recordslist.append(Query(row[2], row[7], row[5], row[3], row[4], row[6]))
     return recordslist
 
-def getVisits(date):
+def getVisits():
     curr.execute("SELECT q.vdate, count(*) FROM queries q group by q.vdate;")
     records = curr.fetchall()
     stat = dict(date, int)
