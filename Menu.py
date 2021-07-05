@@ -3,7 +3,7 @@ from telebot import types
 import data_base
 from user import User
 import datetime
-from Query import Query
+from query import Query
 now = datetime.datetime.now()
 bot = telebot.TeleBot('1860264884:AAGUDK2euWD_2UswRfGzyc_i-Hqz0MTJu7o')
 sort = {'По умолчанию': 101, 'Дешевле': 1, 'Дороже': 2, 'По дате (новые)': 104}
@@ -50,7 +50,7 @@ def mainMenu(message):
         bot.send_message(message.chat.id, 'Пример: Челябинск Молодогвардейцев 16')
         bot.register_next_step_handler(msg, savePlace)
     else:
-        bot.send_message(message.chat.id, "Здравствуйте, " + user + "ваш ID: " + str(message.chat.id) + ", Вы находитесь в главном меню. Выберите действие",
+        bot.send_message(message.chat.id, "Здравствуйте, " + user + " ваш ID: " + str(message.chat.id) + ", Вы находитесь в главном меню. Выберите действие",
                          reply_markup=markup)
 
 
@@ -222,23 +222,25 @@ def saveVideocard(message):
 
 def doSearch(message, ads=None):
     # мне бы объекты объявлений
-    markup = types.ReplyKeyboardMarkup(row_width=2)
-    itembtn1 = newButton('Влево')
-    itembtn2 = newButton('Вправо')
-    itembtn3 = newButton('Добавить в избранное')
-    itembtn4 = newButton('Главное меню')
-    markup.add(itembtn1, itembtn2, itembtn3, itembtn4)
-    bot.send_message(message.chat.id, "Результаты поиска:")
-    # надо их по 3 штуки
-    for ad in range(3):
-        bot.send_message(message.chat.id, 'Объявление №'+str(ad))
-    msg = bot.send_message(message.chat.id, "Выберите действие", reply_markup=markup)
-    bot.register_next_step_handler(msg, doSearch)
     if message.text == 'Главное меню':
+        bot.clear_step_handler_by_chat_id(message.chat.id)
         msg = bot.send_message(message.chat.id, "Вы перешли в главное меню")
         bot.register_next_step_handler(msg, mainMenu)
         mainMenu(message)
-
+    else:
+        bot.clear_step_handler_by_chat_id(message.chat.id)
+        markup = types.ReplyKeyboardMarkup(row_width=2)
+        itembtn1 = newButton('Влево')
+        itembtn2 = newButton('Вправо')
+        itembtn3 = newButton('Добавить в избранное')
+        itembtn4 = newButton('Главное меню')
+        markup.add(itembtn1, itembtn2, itembtn3, itembtn4)
+        bot.send_message(message.chat.id, "Результаты поиска:")
+        # надо их по 3 штуки
+        for ad in range(3):
+            bot.send_message(message.chat.id, 'Объявление №'+str(ad))
+        msg = bot.send_message(message.chat.id, 'Выберите действие')
+        bot.register_next_step_handler(msg, doSearch)
 
 
 bot.polling(none_stop=True)
