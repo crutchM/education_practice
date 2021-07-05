@@ -3,22 +3,29 @@ from telebot import types
 import data_base
 from user import User
 import datetime
-from query import Query
+from Query import Query
 now = datetime.datetime.now()
 bot = telebot.TeleBot('1860264884:AAGUDK2euWD_2UswRfGzyc_i-Hqz0MTJu7o')
 sort = {'По умолчанию': 101, 'Дешевле': 1, 'Дороже': 2, 'По дате (новые)': 104}
 query = Query(None)
+testInc = 0
 
 
 def newButton(text):
     return types.KeyboardButton(text)
 
+
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id, 'Добро пожаловать')
-    bot.send_message(message.chat.id, 'Укажите свое местоположение в формате: "город улица дом"')
-    msg = bot.send_message(message.chat.id, "Пример: Челябинск Молодогвардейцев 16")
-    bot.register_next_step_handler(msg, savePlace)
+    if data_base.isUsrExists(message.chat.id):
+        msg = bot.send_message(message.chat.id, "Вы перешли в главное меню")
+        bot.register_next_step_handler(msg, mainMenu)
+        mainMenu(message)
+    else:
+        bot.send_message(message.chat.id, 'Добро пожаловать')
+        bot.send_message(message.chat.id, 'Укажите свое местоположение в формате: "город улица дом"')
+        msg = bot.send_message(message.chat.id, "Пример: Челябинск Молодогвардейцев 16")
+        bot.register_next_step_handler(msg, savePlace)
 
 
 def mainMenu(message):
@@ -43,6 +50,10 @@ def mainMenu(message):
         markup.add(itembtn6)
         msg = bot.send_message(message.chat.id, "Вы перешли в меню поиска", reply_markup=markup)
         bot.register_next_step_handler(msg, filterMenu)
+    elif message.text == 'хуй':
+        global testInc
+        msg = bot.send_message(message.chat.id, 'Переменная равна: ' + str(testInc))
+        bot.register_next_step_handler(msg, mainMenu)
 
     elif message.text.lower() == 'указать адрес':
         msg = bot.send_message(message.chat.id, "Вы в меню выбора локации")
@@ -123,11 +134,10 @@ def savePlace(message):
     # сохранить местоположение
     if len(message.text.split(' ')) == 3:
         msg = bot.send_message(message.chat.id, "Сохранено местоположение: " + message.text + " !")
-        user = User("user", message.chat.id, now.strftime("%y-%m-%d"), None, None, message.text)
+        user = User("user", message.chat.id, now.strftime("%y-%m-%d"), None, None, message.text, None)
         data_base.addUser(user)
         bot.register_next_step_handler(msg, mainMenu)
         mainMenu(message)
-
     else:
         msg = bot.send_message(message.chat.id, 'Некорректные данные, попробуйте еще раз')
         bot.register_next_step_handler(msg, savePlace)
