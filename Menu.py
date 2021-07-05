@@ -5,13 +5,13 @@ from user import User
 import datetime
 from Query import Query
 now = datetime.datetime.now()
-bot = telebot.TeleBot('1706939990:AAEQ2KZ4VRbincT7Sa9TvaL-FRJ7SiD6Z08')
+bot = telebot.TeleBot('1860264884:AAGUDK2euWD_2UswRfGzyc_i-Hqz0MTJu7o')
 sort = {'По умолчанию': 101, 'Дешевле': 1, 'Дороже': 2, 'По дате (новые)': 104}
 query = Query(None)
 
+
 def newButton(text):
     return types.KeyboardButton(text)
-
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -82,8 +82,16 @@ def filterMenu(message):
         bot.register_next_step_handler(msg, mainMenu)
         mainMenu(message)
     elif message.text.lower() == 'выполнить поиск':
-        # срабатывает поиск
-        pass
+        markup = types.ReplyKeyboardMarkup(row_width=2)
+        itembtn1 = newButton('Влево')
+        itembtn2 = newButton('Вправо')
+        itembtn3 = newButton('Добавить в избранное')
+        itembtn4 = newButton('Главное меню')
+        markup.add(itembtn1, itembtn2, itembtn3, itembtn4)
+
+        msg = bot.send_message(message.chat.id, "Вы перешли в меню поиска",reply_markup=markup)
+        bot.register_next_step_handler(msg, doSearch)
+        doSearch(message)
     else:
         bot.send_message(message.chat.id, 'Выбери свою судьбу:', reply_markup=markup)
 
@@ -209,6 +217,27 @@ def saveVideocard(message):
     query.chipName = message.text
     bot.register_next_step_handler(msg, filterMenu)
     filterMenu(message)
+
+
+def doSearch(message, ads=None):
+    # мне бы объекты объявлений
+    markup = types.ReplyKeyboardMarkup(row_width=2)
+    itembtn1 = newButton('Влево')
+    itembtn2 = newButton('Вправо')
+    itembtn3 = newButton('Добавить в избранное')
+    itembtn4 = newButton('Главное меню')
+    markup.add(itembtn1, itembtn2, itembtn3, itembtn4)
+    bot.send_message(message.chat.id, "Результаты поиска:")
+    # надо их по 3 штуки
+    for ad in range(3):
+        bot.send_message(message.chat.id, 'Объявление №'+str(ad))
+    msg = bot.send_message(message.chat.id, "Выберите действие", reply_markup=markup)
+    bot.register_next_step_handler(msg, doSearch)
+    if message.text == 'Главное меню':
+        msg = bot.send_message(message.chat.id, "Вы перешли в главное меню")
+        bot.register_next_step_handler(msg, mainMenu)
+        mainMenu(message)
+
 
 
 bot.polling(none_stop=True)
