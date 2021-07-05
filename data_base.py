@@ -1,6 +1,7 @@
 import sqlite3
 import string
-
+from Query import Query
+from Ad import Adverticement
 
 conn = sqlite3.connect('users.sql', check_same_thread=False)
 
@@ -72,7 +73,7 @@ curr.execute("""
 def addUser(usr):
     curr.execute("INSERT INTO users VALUES(?,?,?,?,?);", (str(usr.id), usr.role, usr.location, usr.reg_date, None))
     conn.commit()
-def getUser(user):
+def isUsrExists(user):
     curr.execute("SELECT * FROM users WHERE id = ?", str(user))
     return curr.fetchone() is not None
 
