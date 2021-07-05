@@ -3,10 +3,11 @@ from telebot import types
 import data_base
 from user import User
 import datetime
+from Query import Query
 now = datetime.datetime.now()
 bot = telebot.TeleBot('1706939990:AAEQ2KZ4VRbincT7Sa9TvaL-FRJ7SiD6Z08')
 sort = {'По умолчанию': 101, 'Дешевле': 1, 'Дороже': 2, 'По дате (новые)': 104}
-
+query = Query(None)
 
 def newButton(text):
     return types.KeyboardButton(text)
@@ -17,7 +18,6 @@ def start(message):
     bot.send_message(message.chat.id, 'Добро пожаловать')
     bot.send_message(message.chat.id, 'Укажите свое местоположение в формате: "город улица дом"')
     msg = bot.send_message(message.chat.id, "Пример: Челябинск Молодогвардейцев 16")
-    data_base.addUser(User("user", message.chat.id, now.strftime("%y-%m-%d"), None, None, message.text))
     bot.register_next_step_handler(msg, savePlace)
 
 
@@ -98,12 +98,14 @@ def chooseRadius(message):
     btn6 = newButton('100')
     markup.add(btn1, btn2, btn3, btn4, btn5, btn6)
     msg = bot.send_message(message.chat.id, "Выберите радиус", reply_markup=markup)
+
     bot.register_next_step_handler(msg, saveRadius)
 
 
 def saveRadius(message):
     ##сохранить радиус
     msg = bot.send_message(message.chat.id, 'Сохранен радиус : ' + message.text + ' !')
+    query.rad = int(message.text)
     bot.register_next_step_handler(msg, filterMenu)
     filterMenu(message)
 
@@ -113,6 +115,7 @@ def savePlace(message):
     # сохранить местоположение
     if len(message.text.split(' ')) == 3:
         msg = bot.send_message(message.chat.id, "Сохранено местоположение: " + message.text + " !")
+        data_base.addUser(User("user", message.chat.id, now.strftime("%y-%m-%d"), None, None, message.text))
         bot.register_next_step_handler(msg, mainMenu)
         mainMenu(message)
 
@@ -143,6 +146,7 @@ def savePrice(message):
 
 def ifMinPrice(message):
     msg = bot.send_message(message.chat.id, 'Сохранена минмальная цена : ' + message.text + ' !')
+    query.minCost = int(message.text)
     bot.register_next_step_handler(msg, filterMenu)
     filterMenu(message)
     # save in DB
@@ -150,6 +154,7 @@ def ifMinPrice(message):
 
 def ifMaxPrice(message):
     msg = bot.send_message(message.chat.id, 'Сохранена максимальная цена : ' + message.text + ' !')
+    query.maxCost = int(message.text)
     bot.register_next_step_handler(msg, filterMenu)
     filterMenu(message)
     # save in DB
@@ -169,6 +174,7 @@ def saveRate(message):
     else:
         # сохранить рейтинг
         msg = bot.send_message(message.chat.id, 'Сохранен рейтинг : ' + message.text + ' !')
+        query.sellerRate = float(message.text)
         bot.register_next_step_handler(msg, filterMenu)
         filterMenu(message)
 
@@ -187,6 +193,7 @@ def chooseSort(message):
 def saveSort(message):
     # сохранить сортировку в зависимости от выбора
     msg = bot.send_message(message.chat.id, 'Сохранена сортировка : ' + message.text + ' !')
+    query.sort = sort[message.text]
     bot.register_next_step_handler(msg, filterMenu)
     filterMenu(message)
 
@@ -199,6 +206,7 @@ def chooseVideocard(message):
 def saveVideocard(message):
     # сохранить видеокарту
     msg = bot.send_message(message.chat.id, 'Сохранена видеокарта : ' + message.text + ' !')
+    query.chipName = message.text
     bot.register_next_step_handler(msg, filterMenu)
     filterMenu(message)
 
