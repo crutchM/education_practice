@@ -1,7 +1,6 @@
 import sqlite3
 import string
-from Ad import Adverticement
-from Query import Query
+
 
 conn = sqlite3.connect('users.sql', check_same_thread=False)
 

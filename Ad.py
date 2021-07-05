@@ -1,4 +1,4 @@
-
+import data_base
 class Adverticement:
     def __init__(self, cost, name, link):
         self.cost = cost
