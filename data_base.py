@@ -1,6 +1,5 @@
 import sqlite3
 import string
-
 from Ad import Adverticement
 from Query import Query
 
@@ -23,7 +22,7 @@ conn.commit()
 
 curr.execute("""
     CREATE TABLE IF NOT EXISTS favourites(
-        id INT PRIMARY KEY ,
+        
         usr INT,
         link TEXT NOT NULL,
         price INT,
@@ -36,7 +35,6 @@ conn.commit()
 
 curr.execute("""
     CREATE TABLE IF NOT EXISTS queries(
-        id INT PRIMARY KEY,
         usr INT,
         filter_radius INT,
         filter_min_price INT,
@@ -76,12 +74,12 @@ def addUser(usr):
     curr.execute("INSERT INTO users VALUES(?,?,?,?,?);", (str(usr.id), usr.role, usr.location, usr.reg_date, None))
     conn.commit()
 
-def addToFavourite(advertisement):
-    curr.execute("INSERT INTO favourites VALUES(?,?,?,?,?);", advertisement)
+def addToFavourite(advertisement, usrid):
+    curr.execute("INSERT INTO favourites VALUES(?,?,?,?);", (str(usrid), advertisement.link, advertisement.cost, advertisement.name))
     conn.commit()
 
-def addToQueriesHistory(query):
-    curr.execute("INSERT INTO favourites VALUES(?,?,?,?,?,?,?,?);", query)
+def addToQueriesHistory(query, id, date):
+    curr.execute("INSERT INTO queries VALUES(?,?,?,?,?,?,?,?);", (id, query.rad, query.minCost, query.maxCost, query.sellerRate, query.sort, query.chipName, date))
     conn.commit()
 
 def getFavourites(userid):
