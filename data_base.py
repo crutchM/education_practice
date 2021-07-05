@@ -72,6 +72,9 @@ curr.execute("""
 def addUser(usr):
     curr.execute("INSERT INTO users VALUES(?,?,?,?,?);", (str(usr.id), usr.role, usr.location, usr.reg_date, None))
     conn.commit()
+def getUser(user):
+    curr.execute("SELECT * FROM users WHERE id = ?", str(user))
+    return curr.fetchone() is not None
 
 def addToFavourite(advertisement, usrid):
     curr.execute("INSERT INTO favourites VALUES(?,?,?,?);", (str(usrid), advertisement.link, advertisement.cost, advertisement.name))
