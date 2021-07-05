@@ -3,7 +3,7 @@ import random
 import bs4.element
 import requests
 from bs4 import BeautifulSoup
-from Ad import Adverticement
+from Ad import Advertisement
 
 class AvitoParser:
 
@@ -55,7 +55,7 @@ class AvitoParser:
         name = link.select_one('h3.title-root-395AQ.iva-item-title-1Rmmj.title-listRedesign-3RaU2').string.strip()
         g= ad.find('span', {"class" : "price-text-1HrJ_ text-text-1PdBw text-size-s-1PUdo"}).text
         price = self.getPrice(ad)
-        return Adverticement(cost=price, name=name, link=href)
+        return Advertisement(cost=price, name=name, link=href)
 
     def getPrice(self, ad: bs4.element.Tag):
         return self.cleanPrice(ad.find('span', {"class" : "price-text-1HrJ_ text-text-1PdBw text-size-s-1PUdo"}).text)

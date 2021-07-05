@@ -1,7 +1,7 @@
 import sqlite3
 import string
 from Query import Query
-from Ad import Adverticement
+from Ad import Advertisement
 
 conn = sqlite3.connect('users.sql', check_same_thread=False)
 
@@ -73,8 +73,9 @@ curr.execute("""
 def addUser(usr):
     curr.execute("INSERT INTO users VALUES(?,?,?,?,?);", (str(usr.id), usr.role, usr.location, usr.reg_date, None))
     conn.commit()
+
 def isUsrExists(user):
-    curr.execute("SELECT * FROM users WHERE id = ?", str(user))
+    curr.execute("SELECT * FROM users WHERE id =" + str(user) + ";")
     return curr.fetchone() is not None
 
 def addToFavourite(advertisement, usrid):
@@ -90,7 +91,7 @@ def getFavourites(userid):
     records = curr.fetchall()
     recordslist = []
     for row in records:
-        recordslist.append(Adverticement(row[3], row[4], row[2]))
+        recordslist.append(Advertisement(row[3], row[4], row[2]))
     return recordslist
 
 def getQuriesHistory(userid):

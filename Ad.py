@@ -1,5 +1,5 @@
-import data_base
-class Adverticement:
+##import data_base
+class Advertisement:
     def __init__(self, cost, name, link):
         self.cost = cost
         self.name = name

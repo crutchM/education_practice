@@ -1,5 +1,5 @@
 from telebot import TeleBot
-from Ad import Adverticement
+from Ad import Advertisement
 # bot = TeleBot('1706939990:AAEQ2KZ4VRbincT7Sa9TvaL-FRJ7SiD6Z08')
 #
 # @bot.message_handler(content_types=['text'])
@@ -8,4 +8,4 @@ from Ad import Adverticement
 #
 # bot.polling()
 
-print(Adverticement(228, "gtx260", "https://vk.com/im?sel=c190").show())
+print(Advertisement(228, "gtx260", "https://vk.com/im?sel=c190").show())
