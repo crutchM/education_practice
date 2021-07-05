@@ -1,4 +1,4 @@
-from query import Query
+from Query import Query
 import data_base
 
 class User(object):

@@ -1,5 +1,5 @@
 from telebot import TeleBot
-from adverticement import Adverticement
+from Ad import Adverticement
 # bot = TeleBot('1706939990:AAEQ2KZ4VRbincT7Sa9TvaL-FRJ7SiD6Z08')
 #
 # @bot.message_handler(content_types=['text'])
