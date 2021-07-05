@@ -72,8 +72,8 @@ curr.execute("""
         FOREIGN KEY (usr) REFERENCES users(id)
     )
 """)
-def addUser(user):
-    curr.execute("INSERT INTO users VALUES(?,?,?,?);", user.id, user.role, user.location, user.reg_date)
+def addUser(usr):
+    curr.execute("INSERT INTO users VALUES(?,?,?,?,?);", (str(usr.id), usr.role, usr.location, usr.reg_date, None))
     conn.commit()
 
 def addToFavourite(advertisement):

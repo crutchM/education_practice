@@ -123,7 +123,8 @@ def savePlace(message):
     # сохранить местоположение
     if len(message.text.split(' ')) == 3:
         msg = bot.send_message(message.chat.id, "Сохранено местоположение: " + message.text + " !")
-        data_base.addUser(User("user", message.chat.id, now.strftime("%y-%m-%d"), None, None, message.text))
+        user = User("user", message.chat.id, now.strftime("%y-%m-%d"), None, None, message.text)
+        data_base.addUser(user)
         bot.register_next_step_handler(msg, mainMenu)
         mainMenu(message)
 
