@@ -1,6 +1,9 @@
 import telebot
 from telebot import types
-
+import data_base
+from user import User
+import datetime
+now = datetime.datetime.now()
 bot = telebot.TeleBot('1706939990:AAEQ2KZ4VRbincT7Sa9TvaL-FRJ7SiD6Z08')
 sort = {'По умолчанию': 101, 'Дешевле': 1, 'Дороже': 2, 'По дате (новые)': 104}
 
@@ -14,6 +17,7 @@ def start(message):
     bot.send_message(message.chat.id, 'Добро пожаловать')
     bot.send_message(message.chat.id, 'Укажите свое местоположение в формате: "город улица дом"')
     msg = bot.send_message(message.chat.id, "Пример: Челябинск Молодогвардейцев 16")
+    data_base.addUser(User("user", message.chat.id, now.strftime("%y-%m-%d"), None, None, message.text))
     bot.register_next_step_handler(msg, savePlace)
 
 

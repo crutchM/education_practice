@@ -23,7 +23,7 @@ conn.commit()
 
 curr.execute("""
     CREATE TABLE IF NOT EXISTS favourites(
-        id INT PRIMARY KEY,
+        id INT PRIMARY KEY ,
         usr INT,
         link TEXT NOT NULL,
         price INT,
@@ -54,16 +54,26 @@ conn.commit()
 curr.execute("""
     CREATE TABLE IF NOT EXISTS chipStat(
         chip_name TEXT PRIMARY KEY,
-        region TEXT,
-        avg_price INT,
-        cdate DATE
+        avg_price_chel INT,
+        cdate DATE,
+        avg_price_rus INT
     );
     """)
 
+
+
 conn.commit()
 
+curr.execute("""
+    CREATE TABLE IF NOT EXISTS cardList(
+        id INTEGER PRIMARY KEY,
+        card_name TEXT,
+        usr INT,
+        FOREIGN KEY (usr) REFERENCES users(id)
+    )
+""")
 def addUser(user):
-    curr.execute("INSERT INTO users VALUES(?,?,?,?,?);", user)
+    curr.execute("INSERT INTO users VALUES(?,?,?,?);", user.id, user.role, user.location, user.reg_date)
     conn.commit()
 
 def addToFavourite(advertisement):
@@ -98,4 +108,6 @@ def getVisits():
         stat.update(row[0], row[1])
     return stat
 
-
+def getLocation(id):
+    curr.execute("SELECT location FROM users WHERE id = ?;", str(id))
+    return curr.fetchone()
