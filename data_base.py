@@ -112,7 +112,7 @@ def getQuriesHistory(userid):
     records = curr.fetchall()
     recordslist = []
     for row in records:
-        recordslist.append(Query(row[2], row[7], row[5], row[3], row[4], row[6]))
+        recordslist.append(Query(row[6], row[4], row[2], row[3], row[5], row[1]))
     return recordslist
 
 def getVisits():
