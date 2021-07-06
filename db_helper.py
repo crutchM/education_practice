@@ -107,6 +107,12 @@ class db_helper:
         self.db.conn.commit()
         return self.db.curr.execute("SELECT * FROM users").fetchone()
     def getUser(self, id):
-        self.db.curr.execute("SELECT * FROM users WHERE id = ?", (str(id)))
+        self.db.curr.execute("SELECT * FROM users WHERE id = ?", (str(id),))
         res = self.db.curr.fetchone()
         return User(id=res[0], location=res[2], role=res[1], regDate=res[3])
+
+    def getLastQuery(self, id):
+        max_date = self.db.curr.execute("SELECT MAX(qdate) from queries where usr = ?", (id,)).fetchone()
+        self.db.curr.execute("SELECT * FROM queries where qdate = ?", (max_date,))
+        res = self.db.curr.fetchone()
+        return Query(chipName=res[6], sellerRate=res[4], minCost=res[2], maxCost=res[3], sort=res[5], rad=res[1])
