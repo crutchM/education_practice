@@ -1,6 +1,7 @@
 import telebot
 from telebot import types
 import data_base
+from db_helper import db_helper
 from user import User
 import datetime
 from Query import Query
@@ -10,7 +11,7 @@ now = datetime.datetime.now()
 bot = telebot.TeleBot('1860264884:AAGUDK2euWD_2UswRfGzyc_i-Hqz0MTJu7o')
 sort = {'По умолчанию': 101, 'Дешевле': 1, 'Дороже': 2, 'По дате (новые)': 104}
 testInc = 0
-
+dba = db_helper()
 
 def get_key(d, value):
     for k, v in d.items():
@@ -28,7 +29,7 @@ def getCorrectDate():
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    if data_base.isUsrExists(message.chat.id):
+    if dba.isUsrExists(message.chat.id):
         msg = bot.send_message(message.chat.id, "Вы перешли в главное меню")
         bot.register_next_step_handler(msg, mainMenu)
         mainMenu(message)
@@ -44,7 +45,7 @@ def savePlace(message):
     if len(message.text.split(' ')) == 3:
         msg = bot.send_message(message.chat.id, "Сохранено местоположение: " + message.text + " !")
         user = User("user", message.chat.id, now.strftime("%y-%m-%d"), None, None, message.text)
-        data_base.addUser(user)
+        dba.addUser(user)
         bot.register_next_step_handler(msg, mainMenu)
         mainMenu(message)
     else:
@@ -189,7 +190,7 @@ def mainMenu(message):
             itembtn2 = newButton('➡')
             itembtn4 = newButton('Главное меню')
             markup.add(itembtn1, itembtn2, itembtn4)
-            data_base.addToQueriesHistory(queries[message.chat.id], message.chat.id, getCorrectDate())
+            dba.addToQueriesHistory(queries[message.chat.id], message.chat.id, getCorrectDate())
             #q = Query(queries[message.chat.id].chipName)
             #advList = [*q.getAds('Челябинск').__next__()]
             advList = [*queries[message.chat.id].getAds('Челябинск').__next__()]
@@ -239,7 +240,7 @@ def mainMenu(message):
         bot.register_next_step_handler(msg, savePlace)
 
     elif message.text.lower() == 'избранное':
-        advList = data_base.getFavourites(message.chat.id)
+        advList = dba.getFavourites(message.chat.id)
         favourites = ""
         for adv in advList:
             favourites+=adv.show() + '\n'
@@ -247,7 +248,7 @@ def mainMenu(message):
         bot.register_next_step_handler(msg, mainMenu)
     elif message.text.lower() == 'история':
         queriesHistory = ""
-        for query in data_base.getQuriesHistory(message.chat.id):
+        for query in dba.getQuriesHistory(message.chat.id):
             minPrice = "0"
             maxPrice = "Не указано"
             if queries[message.chat.id].minCost is not None:
@@ -335,8 +336,10 @@ def addAdvinFvr(call):
     cost = arr[3]
     name = arr[1]
     adv = Advertisement(link=link, cost=cost, name=name)
-    data_base.addToFavourite(adv, call.message.chat.id)
+    dba.addToFavourite(adv, call.message.chat.id)
     bot.send_message(call.message.chat.id, 'Добавлено в избранное')
+
+
 
 
 bot.polling(none_stop=True)
