@@ -9,7 +9,7 @@ class db_helper:
         self.db = data_base.data_base()
 
     def addUser(self, usr):
-        self.db.curr.execute("INSERT INTO users VALUES(?,?,?,?);", (str(usr.id), usr.role, usr.location, usr.reg_date))
+        self.db.curr.execute("INSERT INTO users VALUES(?,?,?,?);", (str(usr.id), usr.role, usr.location, usr.regDate))
         self.db.conn.commit()
 
     def isUsrExists(self, user):
