@@ -67,7 +67,7 @@ curr.execute("""
         FOREIGN KEY (usr) REFERENCES users(id),
         FOREIGN KEY (card_name) REFERENCES price_spread_stat(chip),
         FOREIGN KEY (card_name) REFERENCES avg_price_stat(chip_name),
-        PRIMARY KEY (card_name, usr)
+        CONSTRAINT cl_pk PRIMARY KEY (card_name, usr)
     );
 """)
 
