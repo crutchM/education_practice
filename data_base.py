@@ -81,6 +81,14 @@ curr.execute("""
 
 conn.commit()
 
+curr.execute("""
+    CREATE TABLE IF NOT EXISTS favourites_price_change(
+        favourite INTEGER,
+        price INTEGER,
+        fdate DATE,
+        FOREIGN KEY(favourite) REFERENCES favourites(id)
+    );
+""")
 def addUser(usr):
     curr.execute("INSERT INTO users VALUES(?,?,?,?);", (str(usr.id), usr.role, usr.location, usr.reg_date))
     conn.commit()
