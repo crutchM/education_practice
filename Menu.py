@@ -327,6 +327,7 @@ def doSearch(message, advList, index):
         msg = bot.send_message(message.chat.id, 'Выберите действие')
         bot.register_next_step_handler(msg, doSearch, advList, index)
 
+
 @bot.callback_query_handler(func = lambda call: True)
 def addAdvinFvr(call):
     arr = call.message.text.split('\n')
@@ -337,7 +338,5 @@ def addAdvinFvr(call):
     data_base.addToFavourite(adv, call.message.chat.id)
     bot.send_message(call.message.chat.id, 'Добавлено в избранное')
 
-user = User(1, "Челябинск", "Админ", now.strftime("%y-%m-%d"))
-print(user.getInfo())
 
 bot.polling(none_stop=True)

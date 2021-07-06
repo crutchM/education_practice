@@ -10,6 +10,7 @@ class User:
         pass
         #здесь подтянем метод из контроллера с self.Id
 
+
     def getInfo(self):
         return "ID: {0}, Местоположение: {1}, Роль: {2}, Дата регистрации: {3}".format(self.id, self.location, self.role, self.regDate)
 
