@@ -1,3 +1,4 @@
+import datetime
 import sqlite3
 import string
 from Query import Query
@@ -154,4 +155,24 @@ def getPriceAndDateList(chip):
 
 def addCard(user, card):
     curr.execute("INSERT INTO cardList VALUES (?,?)", (card, user))
+    conn.commit()
+
+def AddToFavChanges(id, price):
+    date = datetime.datetime.now().strftime("%y-%m-%d")
+    curr.execute("INSERT INTO favourites_price_change VALUES (?,?,?)", (id, price, date))
+    conn.commit()
+
+def updatePrices():
+    curr.execute("SELECT * FROM favourites")
+    rec = curr.fetchall()
+    list = []
+    for row in rec:
+        list.append(row[0])
+    curr.execute("SELECT MAX(fdate) FROM favourites_price_change ")
+    max_date = curr.fetchone()
+    for id in list:
+        updateOncePrice(id, curr.execute("SELECT price FROM favourites_price_change where id = ? AND fdate = ?", (str(id), max_date)).fetchone())
+
+def updateOncePrice(id, sum):
+    curr.execute("UPDATE favourites set price = ? where id = ?", (str(sum), str(id)))
     conn.commit()
