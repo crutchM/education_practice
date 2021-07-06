@@ -99,7 +99,7 @@ def isUsrExists(user):
     return curr.fetchone() is not None
 
 def addToFavourite(advertisement, usrid):
-    curr.executemany("INSERT INTO favourites VALUES(NULL,?,?,?,?);", (str(usrid), advertisement.link, advertisement.cost, advertisement.name))
+    curr.execute("INSERT INTO favourites VALUES(NULL,?,?,?,?);", (str(usrid), advertisement.link, advertisement.cost, advertisement.name))
     conn.commit()
 
 def addToQueriesHistory(query, id, date):
