@@ -14,7 +14,7 @@ curr.execute("""
         location TEXT NOT NULL,
         register_date DATE,
         last_query INT,
-        FOREIGN KEY (last_query) REFERENCES queries(id)
+        
     );
 """)
 
@@ -42,7 +42,7 @@ curr.execute("""
         filter_saller_rate DOUBLE,
         sort_type INT,
         query TEXT, 
-        vdate DATE,
+        qdate DATE,
         FOREIGN KEY (usr) REFERENCES users(id)     
     );
 """)
