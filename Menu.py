@@ -17,8 +17,13 @@ def get_key(d, value):
         if v == value:
             return k
 
+
 def newButton(text):
     return types.KeyboardButton(text)
+
+
+def getCorrectDate():
+    return now.strftime("%y-%m-%d")
 
 
 @bot.message_handler(commands=['start'])
@@ -184,7 +189,7 @@ def mainMenu(message):
             itembtn3 = newButton('Добавить в избранное')
             itembtn4 = newButton('Главное меню')
             markup.add(itembtn1, itembtn2, itembtn3, itembtn4)
-
+            data_base.addToQueriesHistory(queries[message.chat.id], message.chat.id, getCorrectDate())
             q = Query(queries[message.chat.id].chipName)
             advList = [*q.getAds('Челябинск').__next__()]
 
@@ -230,6 +235,12 @@ def mainMenu(message):
         bot.send_message(message.chat.id, 'Укажите свое местоположение в формате: "город улица дом"')
         bot.send_message(message.chat.id, 'Пример: Челябинск Молодогвардейцев 16')
         bot.register_next_step_handler(msg, savePlace)
+    elif message.text.lower() == 'история':
+        queriesHistory = ""
+        for query in data_base.getQuriesHistory(message.chat.id):
+            queriesHistory += "Видеокарта: " + query.chipName + "\n"
+        msg = bot.send_message(message.chat.id, queriesHistory)
+        bot.register_next_step_handler(msg, mainMenu)
     else:
         bot.send_message(message.chat.id, "Здравствуйте, " + user + " ваш ID: " + str(
             message.chat.id) + ", Вы находитесь в главном меню. Выберите действие",
