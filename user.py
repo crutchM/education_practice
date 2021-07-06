@@ -1,20 +1,15 @@
-from Query import Query
-import data_base
-
-class User(object):
-    def __init__(self, role, id, register_date, favourites, queries, location):
-        self.role = role
+class User:
+    def __init__(self, id, location, role, regDate, lastQuery = None):
         self.id = id
-        self.favourites = favourites
-        self.queries = queries
         self.location = location
-        self.reg_date = register_date
+        self.role = role
+        self.regDate = regDate
+        self.lastQuery = lastQuery
 
-    def makeQuery(self, rad, chipName, sellerRate, minCost, maxCost, sort):
-        return Query(rad, chipName, sellerRate, minCost, maxCost, sort)
+    def getLastQuery(self):
+        pass
+        #здесь подтянем метод из контроллера с self.Id
 
-
-
-
-
+    def getInfo(self):
+        return "ID: {0}, Местоположение: {1}, Роль: {2}, Дата регистрации: {3}".format(self.id, self.location, self.role, self.regDate)
 
