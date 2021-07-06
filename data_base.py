@@ -12,9 +12,7 @@ curr.execute("""
         id INT PRIMARY KEY,
         role TEXT NOT NULL,
         location TEXT NOT NULL,
-        register_date DATE,
-        last_query INT,
-        
+        register_date DATE
     );
 """)
 
