@@ -145,3 +145,7 @@ def getPriceAndDateList(chip):
         avg_rus.append(row[3])
         date.append(row[2])
     return (avg_rus, avg_chel, date)
+
+def addCard(user, card):
+    curr.execute("INSERT INTO cardList VALUES (?,?)", (card, user))
+    conn.commit()
