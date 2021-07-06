@@ -20,7 +20,7 @@ conn.commit()
 
 curr.execute("""
     CREATE TABLE IF NOT EXISTS favourites(
-        
+        id INTEGER PRIMARY KEY, 
         usr INT,
         link TEXT NOT NULL,
         price INT,
