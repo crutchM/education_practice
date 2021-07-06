@@ -124,12 +124,24 @@ def getVisits():
     return stat
 
 def getLocation(id):
-    curr.execute("SELECT location FROM users WHERE id = ?;", str(id))
+    curr.execute("SELECT location FROM users WHERE id = ?;", (str(id),))
     return curr.fetchone()
 
 def setValToSpread(chip, values_rus, values_chel):
-    if curr.execute("SELECT * FROM price_spread_stat p WHERE p.chip = ?", chip).fetchone() is None:
+    if curr.execute("SELECT * FROM price_spread_stat p WHERE p.chip = ?", (chip,)).fetchone() is None:
         curr.execute("INSERT INTO price_spread_stat VALUES (?,?,?)", (chip, values_rus, values_chel))
         conn.commit()
-    ##else: curr.execute("UPDATE price_spread_stat  ")
+    else: curr.execute("UPDATE price_spread_stat set  values_rus = ?, values_chel = ? WHERE chip = ?", (values_rus, values_chel, chip))
+    conn.commit()
 
+def getPriceAndDateList(chip):
+    curr.execute("SELECT * FROM avg_price_stat WHERE chip_name = ?", (chip,))
+    rec = curr.fetchall()
+    avg_chel = []
+    avg_rus = []
+    date = []
+    for row in rec:
+        avg_chel.append(row[1])
+        avg_rus.append(row[3])
+        date.append(row[2])
+    return (avg_rus, avg_chel, date)
