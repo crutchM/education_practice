@@ -50,7 +50,7 @@ curr.execute("""
 conn.commit()
 
 curr.execute("""
-    CREATE TABLE IF NOT EXISTS chipStat(
+    CREATE TABLE IF NOT EXISTS avg_price_stat(
         chip_name TEXT PRIMARY KEY,
         avg_price_chel INT,
         cdate DATE,
@@ -58,18 +58,31 @@ curr.execute("""
     );
     """)
 
-
-
 conn.commit()
 
 curr.execute("""
     CREATE TABLE IF NOT EXISTS cardList(
-        id INTEGER PRIMARY KEY,
         card_name TEXT,
         usr INT,
-        FOREIGN KEY (usr) REFERENCES users(id)
-    )
+        FOREIGN KEY (usr) REFERENCES users(id),
+        FOREIGN KEY (card_name) REFERENCES price_spread_stat(chip),
+        FOREIGN KEY (card_name) REFERENCES avg_price_stat(chip_name),
+        PRIMARY KEY (card_name, usr)
+    );
 """)
+
+conn.commit()
+
+curr.execute("""
+    CREATE TABLE IF NOT EXISTS price_spread_stat(
+        chip TEXT PRIMARY KEY,
+        values_rus TEXT,
+        values_chel TEXT
+    );
+""")
+
+conn.commit()
+
 def addUser(usr):
     curr.execute("INSERT INTO users VALUES(?,?,?,?,?);", (str(usr.id), usr.role, usr.location, usr.reg_date, None))
     conn.commit()
@@ -95,7 +108,7 @@ def getFavourites(userid):
     return recordslist
 
 def getQuriesHistory(userid):
-    curr.execute("SELECT * FROM queries WHERE id = ?;", userid)
+    curr.execute("SELECT * FROM queries WHERE usr = ?;", (str(userid),))
     records = curr.fetchall()
     recordslist = []
     for row in records:
@@ -113,3 +126,10 @@ def getVisits():
 def getLocation(id):
     curr.execute("SELECT location FROM users WHERE id = ?;", str(id))
     return curr.fetchone()
+
+def setValToSpread(chip, values_rus, values_chel):
+    if curr.execute("SELECT * FROM price_spread_stat p WHERE p.chip = ?", chip).fetchone() is None:
+        curr.execute("INSERT INTO price_spread_stat VALUES (?,?,?)", (chip, values_rus, values_chel))
+        conn.commit()
+    ##else: curr.execute("UPDATE price_spread_stat  ")
+
