@@ -99,7 +99,7 @@ def isUsrExists(user):
     return curr.fetchone() is not None
 
 def addToFavourite(advertisement, usrid):
-    curr.execute("INSERT INTO favourites VALUES(?,?,?,?);", (str(usrid), advertisement.link, advertisement.cost, advertisement.name))
+    curr.executemany("INSERT INTO favourites VALUES(NULL,?,?,?,?);", (str(usrid), advertisement.link, advertisement.cost, advertisement.name))
     conn.commit()
 
 def addToQueriesHistory(query, id, date):
@@ -111,7 +111,7 @@ def getFavourites(userid):
     records = curr.fetchall()
     recordslist = []
     for row in records:
-        recordslist.append(Advertisement(row[3], row[4], row[2]))
+        recordslist.append(Advertisement(cost = row[3],  name = row[4], link=row[2]))
     return recordslist
 
 def getQuriesHistory(userid):
@@ -172,6 +172,7 @@ def updatePrices():
     max_date = curr.fetchone()
     for id in list:
         updateOncePrice(id, curr.execute("SELECT price FROM favourites_price_change where id = ? AND fdate = ?", (str(id), max_date)).fetchone())
+    conn.commit()
 
 def updateOncePrice(id, sum):
     curr.execute("UPDATE favourites set price = ? where id = ?", (str(sum), str(id)))
