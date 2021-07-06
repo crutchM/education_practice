@@ -1,10 +1,10 @@
 class User:
-    def __init__(self, id, location, role, regDate, lastQuery = None):
+    def __init__(self, id, location, role, regDate):
         self.id = id
         self.location = location
         self.role = role
         self.regDate = regDate
-        self.lastQuery = lastQuery
+
 
     def getLastQuery(self):
         pass

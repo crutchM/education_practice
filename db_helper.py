@@ -3,7 +3,7 @@ import datetime
 import string
 from Query import Query
 from Ad import Advertisement
-
+from user import User
 class db_helper:
     def __init__(self):
         self.db = data_base.data_base()
@@ -106,3 +106,7 @@ class db_helper:
         self.db.curr.execute("INSERT INTO users VALUES(?,?,?,?);", (str(123), "usr.role", "usr.location", "2021-09-09"))
         self.db.conn.commit()
         return self.db.curr.execute("SELECT * FROM users").fetchone()
+    def getUser(self, id):
+        self.db.curr.execute("SELECT * FROM users WHERE id = ?", (str(id)))
+        res = self.db.curr.fetchone()
+        return User(id=res[0], location=res[2], role=res[1], regDate=res[3])
