@@ -82,7 +82,7 @@ curr.execute("""
 conn.commit()
 
 def addUser(usr):
-    curr.execute("INSERT INTO users VALUES(?,?,?,?,?);", (str(usr.id), usr.role, usr.location, usr.reg_date, None))
+    curr.execute("INSERT INTO users VALUES(?,?,?,?);", (str(usr.id), usr.role, usr.location, usr.reg_date))
     conn.commit()
 
 def isUsrExists(user):
