@@ -36,5 +36,5 @@ class Query:
     def getAds(self, location: str):
         pars = AvitoParser()
         url = self.makeURL(location)
-        filt = lambda x: self.ratingFilter(x, self.sellerRate) if self.sellerRate is not None else lambda x: True
+        filt = lambda x: pars.ratingFilter(x, self.sellerRate) if self.sellerRate is not None else lambda x: True
         return pars.getAds(url, lambda x: pars.parseAd(x, filt))

@@ -76,9 +76,3 @@ class AvitoParser:
             return False
         return True if float(rate.text.strip().replace(',', '.')) >= rating else False
 
-
-
-
-
-
-
