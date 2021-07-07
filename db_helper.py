@@ -117,3 +117,6 @@ class db_helper:
         res = self.db.curr.fetchone()
         return Query(chipName=res[6], sellerRate=res[4], minCost=res[2], maxCost=res[3], sort=res[5], rad=res[1])
 
+    def updateLoc(self, id, location):
+        self.db.curr.execute("UPDATE users set location = ? where id = ?", (location, id))
+        self.db.conn.commit()
