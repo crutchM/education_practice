@@ -104,6 +104,13 @@ class db_helper:
 
     def doTest(self):
         self.db.curr.execute("INSERT INTO users VALUES(?,?,?,?);", (str(123), "usr.role", "usr.location", "2021-09-09"))
+        self.db.curr.execute("INSERT INTO queries VALUES(?,?,?,?,?,?,?,?);",
+                             (123, 4, 4, 6, 6, 1, "aboba",
+                              "2021-09-09-21:55:010"))
+        self.db.curr.execute("INSERT INTO queries VALUES(?,?,?,?,?,?,?,?);",
+                             (123, 3, 3, 5, 5, 1, "aboba",
+                              "2021-09-09-21:55:09"))
+
         self.db.conn.commit()
         return self.db.curr.execute("SELECT * FROM users").fetchone()
     def getUser(self, id):
@@ -112,7 +119,7 @@ class db_helper:
         return User(id=res[0], location=res[2], role=res[1], regDate=res[3])
 
     def getLastQuery(self, id):
-        max_date = self.db.curr.execute("SELECT MAX(qdate) FROM queries WHERE usr = ?", (str(id),)).fetchone()[0]
+        max_date = self.db.curr.execute("SELECT qdate FROM  queries WHERE usr = ? ", (str(id),)).fetchone()[0]
         res = self.db.curr.execute("SELECT * FROM queries WHERE qdate = ?", (str(max_date),)).fetchone()
         if res is None:
             return None
