@@ -44,13 +44,20 @@ def savePlace(message):
     bot.clear_step_handler_by_chat_id(message.chat.id)
     if len(message.text.split(' ')) == 3:
         msg = bot.send_message(message.chat.id, "Сохранено местоположение: " + message.text + " !")
-        user = User("user", message.chat.id, now.strftime("%y-%m-%d"), None, None, message.text)
-        dba.addUser(user)
+        if dba.isUsrExists(message.chat.id):
+            dba.updateLoc(message.chat.id, message.text)
+        else:
+            registerUser(message, message.text)
         bot.register_next_step_handler(msg, mainMenu)
         mainMenu(message)
     else:
         msg = bot.send_message(message.chat.id, 'Некорректные данные, попробуйте еще раз')
         bot.register_next_step_handler(msg, savePlace)
+
+
+def registerUser(message, location):
+    user = User(id=message.chat.id, location=location, role="user", regDate=now.strftime("%y-%m-%d"))
+    dba.addUser(user)
 
 
 def mainMenu(message):
@@ -211,13 +218,24 @@ def mainMenu(message):
             scatter + "\n" + sortType + "\n" + "Видеокарта: " + queries[message.chat.id].chipName + "\n" +
             rate, reply_markup=markup)
 
-    user = bot.get_chat(message.chat.id).username
-    markup = types.ReplyKeyboardMarkup(row_width=2)
+    user = bot.get_chat(message.chat.id).username #для приветствия
+    usr = dba.getUser(message.chat.id)  #для обработки
+    markup = types.ReplyKeyboardMarkup(row_width=4)
     itembtn1 = newButton('Сделать запрос')
     itembtn2 = newButton('Указать адрес')
-    itembtn3 = newButton('Избранное')
-    itembtn4 = newButton('История')
-    markup.add(itembtn1, itembtn2, itembtn3, itembtn4)
+    itembtn3 = newButton('Мониторинг чипов')
+    itembtn4 = newButton('Избранное')
+    itembtn5 = newButton('История')
+    itembtn6 = newButton('Просмотр статистики')
+    itembtn7 = newButton('Изменить роль')
+
+    if usr.role == 'user':
+        markup.add(itembtn1, itembtn2, itembtn3)
+        markup.add(itembtn4, itembtn5)
+    else:
+        markup.add(itembtn1, itembtn2, itembtn3)
+        markup.add(itembtn6, itembtn7, itembtn4, itembtn5)
+
     if message.text.lower() == 'сделать запрос':
         markup = types.ReplyKeyboardMarkup(row_width=5)
         itembtn1 = newButton('Радиус')
@@ -241,11 +259,17 @@ def mainMenu(message):
 
     elif message.text.lower() == 'избранное':
         advList = dba.getFavourites(message.chat.id)
-        favourites = ""
-        for adv in advList:
-            favourites+=adv.show() + '\n'
-        msg = bot.send_message(message.chat.id, favourites)
-        bot.register_next_step_handler(msg, mainMenu)
+        if len(advList) == 0:
+            msg = bot.send_message(message.chat.id, 'Список избранного пуст')
+            bot.register_next_step_handler(msg, mainMenu)
+        else:
+            msg = bot.send_message(message.chat.id, "Ваше избранное:")
+            for adv in advList:
+                removebtn = types.InlineKeyboardButton(text='Удалить', callback_data="remove")
+                markup = types.InlineKeyboardMarkup()
+                markup.add(removebtn)
+                bot.send_message(msg.chat.id, adv.show(), reply_markup=markup)
+            bot.register_next_step_handler(msg, mainMenu)
     elif message.text.lower() == 'история':
         queriesHistory = ""
         for query in dba.getQuriesHistory(message.chat.id):
@@ -259,8 +283,12 @@ def mainMenu(message):
             sortType = "Сортировка: " + str(get_key(sort, query.sort))
             rate = "Минимальный рейтинг продавца в звездах: " + str(query.sellerRate)
             queriesHistory += "Видеокарта: " + query.chipName + ", " + "Радиус: " + str(query.rad) + " км, " + scatter + ", " + "\n" + sortType + ", " + rate + "\n\n"
-        msg = bot.send_message(message.chat.id, queriesHistory)
-        bot.register_next_step_handler(msg, mainMenu)
+        if not queriesHistory:
+            msg = bot.send_message(message.chat.id, 'Ваша история пуста')
+            bot.register_next_step_handler(msg, mainMenu)
+        else:
+            msg = bot.send_message(message.chat.id, queriesHistory)
+            bot.register_next_step_handler(msg, mainMenu)
     else:
         bot.send_message(message.chat.id, "Здравствуйте, " + user + " ваш ID: " + str(
             message.chat.id) + ", Вы находитесь в главном меню. Выберите действие",
@@ -331,13 +359,19 @@ def doSearch(message, advList, index):
 
 @bot.callback_query_handler(func = lambda call: True)
 def addAdvinFvr(call):
-    arr = call.message.text.split('\n')
-    link = arr[5]
-    cost = arr[3]
-    name = arr[1]
-    adv = Advertisement(link=link, cost=cost, name=name)
-    dba.addToFavourite(adv, call.message.chat.id)
-    bot.send_message(call.message.chat.id, 'Добавлено в избранное')
+    if call.data == 'remove':
+        adv = call.message.text.split('\n')
+        dba.delFromFav(call.message.chat.id, adv[4])
+        bot.send_message(call.message.chat.id, 'Удалено!')
+
+    else:
+        arr = call.message.text.split('\n')
+        link = arr[5]
+        cost = arr[3]
+        name = arr[1]
+        adv = Advertisement(link=link, cost=cost, name=name)
+        dba.addToFavourite(adv, call.message.chat.id)
+        bot.send_message(call.message.chat.id, 'Добавлено в избранное')
 
 
 
