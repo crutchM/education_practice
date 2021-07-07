@@ -124,6 +124,6 @@ class db_helper:
     def updateUsrRole(self, id, role):
         self.db.curr.execute("UPDATE users set role = ? where id = ?", (role, id))
         self.db.conn.commit()
-    def delFromFav(self, user):
-        self.db.currexecute("DELETE FROM favourites WHERE usr = ?", (user,))
+    def delFromFav(self, user, link):
+        self.db.currexecute("DELETE FROM favourites WHERE usr = ? AND link = ?", (user, link))
         self.db.conn.commit()
