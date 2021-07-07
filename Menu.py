@@ -13,6 +13,7 @@ sort = {'По умолчанию': 101, 'Дешевле': 1, 'Дороже': 2, 
 testInc = 0
 dba = db_helper()
 
+
 def get_key(d, value):
     for k, v in d.items():
         if v == value:
@@ -37,10 +38,10 @@ def start(message):
         bot.send_message(message.chat.id, 'Добро пожаловать')
         bot.send_message(message.chat.id, 'Укажите свое местоположение в формате: "город улица дом"')
         msg = bot.send_message(message.chat.id, "Пример: Челябинск Молодогвардейцев 16")
-        bot.register_next_step_handler(msg, savePlace)
+        bot.register_next_step_handler(msg, savePlace, message)
 
 
-def savePlace(message):
+def savePlace(message, msge=None):
     bot.clear_step_handler_by_chat_id(message.chat.id)
     if len(message.text.split(' ')) == 3:
         msg = bot.send_message(message.chat.id, "Сохранено местоположение: " + message.text + " !")
@@ -48,8 +49,8 @@ def savePlace(message):
             dba.updateLoc(message.chat.id, message.text)
         else:
             registerUser(message, message.text)
-        bot.register_next_step_handler(msg, mainMenu)
-        mainMenu(message)
+            bot.register_next_step_handler(msg, mainMenu)
+            mainMenu(msge)
     else:
         msg = bot.send_message(message.chat.id, 'Некорректные данные, попробуйте еще раз')
         bot.register_next_step_handler(msg, savePlace)
@@ -62,6 +63,7 @@ def registerUser(message, location):
 
 def mainMenu(message):
     queries = {}
+    lastQuery = dba.getLastQuery(message.chat.id)
     queries[message.chat.id] = Query(sort=101, chipName='2070', sellerRate=None)
 
     def filterMenu(message):
@@ -69,7 +71,6 @@ def mainMenu(message):
             msg = bot.send_message(message.chat.id, "Введите модель видеокарты",
                                    reply_markup=types.ReplyKeyboardRemove())
             bot.register_next_step_handler(msg, saveVideocard)
-
 
         def saveVideocard(message):
             msg = bot.send_message(message.chat.id, 'Сохранена видеокарта : ' + message.text + ' !')
@@ -85,18 +86,28 @@ def mainMenu(message):
             btn4 = newButton('25')
             btn5 = newButton('50')
             btn6 = newButton('100')
+            btn7 = newButton('Не указывать')
             markup.add(btn1, btn2, btn3, btn4, btn5, btn6)
+            markup.add(btn7)
             msg = bot.send_message(message.chat.id, "Выберите радиус", reply_markup=markup)
 
             bot.register_next_step_handler(msg, saveRadius)
 
         def saveRadius(message):
-            queries[message.chat.id].rad = message.text
-            msg = bot.send_message(message.chat.id, 'Сохранен радиус : ' + message.text + ' !')
-            bot.register_next_step_handler(msg, filterMenu)
-            filterMenu(message)
-
-
+            if message.text in ['1', '5', '10', '25', '50', '100']:
+                queries[message.chat.id].rad = message.text
+                msg = bot.send_message(message.chat.id, 'Сохранен радиус : ' + message.text + ' !')
+                bot.register_next_step_handler(msg, filterMenu)
+                filterMenu(message)
+            elif message.text.lower() == 'не указывать':
+                queries[message.chat.id].rad = None
+                msg = bot.send_message(message.chat.id, 'Настройка радиуса сброшена')
+                bot.register_next_step_handler(msg, filterMenu)
+                filterMenu(message)
+            else:
+                msg = bot.send_message(message.chat.id, 'Некорректные данные')
+                bot.register_next_step_handler(msg, filterMenu)
+                filterMenu(message)
 
         def choosePrice(message):
             markup = types.ReplyKeyboardMarkup(row_width=6, resize_keyboard=True)
@@ -119,17 +130,35 @@ def mainMenu(message):
                 bot.send_message(message.chat.id, 'ошибка')
 
         def ifMinPrice(message):
-            queries[message.chat.id].minCost = int(message.text)
-            msg = bot.send_message(message.chat.id, 'Сохранена минмальная цена : ' + message.text + ' !')
-            bot.register_next_step_handler(msg, filterMenu)
-            filterMenu(message)
-
+            if message.text.isdigit():
+                queries[message.chat.id].minCost = int(message.text)
+                msg = bot.send_message(message.chat.id, 'Сохранена минмальная цена : ' + message.text + ' !')
+                bot.register_next_step_handler(msg, filterMenu)
+                filterMenu(message)
+            else:
+                msg = bot.send_message(message.chat.id, 'Некорректные данные')
+                bot.register_next_step_handler(msg, filterMenu)
+                filterMenu(message)
 
         def ifMaxPrice(message):
-            queries[message.chat.id].maxCost = int(message.text)
-            msg = bot.send_message(message.chat.id, 'Сохранена максимальная цена : ' + message.text + ' !')
-            bot.register_next_step_handler(msg, filterMenu)
-            filterMenu(message)
+            if message.text.isdigit():
+                mincost = 0
+                if queries[message.chat.id].minCost is not None:
+                    mincost = queries[message.chat.id].minCost
+
+                if int(message.text) < mincost:
+                    msg = bot.send_message(message.chat.id, 'Максимальная цена должна быть больше или равна минимальной!')
+                    bot.register_next_step_handler(msg, filterMenu)
+                    filterMenu(message)
+                else:
+                    queries[message.chat.id].maxCost = int(message.text)
+                    msg = bot.send_message(message.chat.id, 'Сохранена максимальная цена : ' + message.text + ' !')
+                    bot.register_next_step_handler(msg, filterMenu)
+                    filterMenu(message)
+            else:
+                msg = bot.send_message(message.chat.id, 'Некорректные данные')
+                bot.register_next_step_handler(msg, filterMenu)
+                filterMenu(message)
 
         def chooseRate(message):
             msg = bot.send_message(message.chat.id, "Введите рейтинг (поддерживаются числа с плавающей точкой 0-5)",
@@ -137,15 +166,22 @@ def mainMenu(message):
             bot.register_next_step_handler(msg, saveRate)
 
         def saveRate(message):
-            if float(message.text) < 0 or float(message.text) > 5:
-                msg = bot.send_message(message.chat.id, 'Некорректные данные ' + message.text + ' !')
+            try:
+                float(message.text)
+                if float(message.text) < 0 or float(message.text) > 5:
+                    msg = bot.send_message(message.chat.id, 'Некорректные данные ' + message.text + ' !')
+                    bot.register_next_step_handler(msg, filterMenu)
+                    filterMenu(message)
+                else:
+                    queries[message.chat.id].sellerRate = float(message.text)
+                    msg = bot.send_message(message.chat.id, 'Сохранен рейтинг : ' + message.text + ' !')
+                    bot.register_next_step_handler(msg, filterMenu)
+                    filterMenu(message)
+            except ValueError:
+                msg = bot.send_message(message.chat.id, 'Некорректные данные')
                 bot.register_next_step_handler(msg, filterMenu)
                 filterMenu(message)
-            else:
-                queries[message.chat.id].sellerRate = float(message.text)
-                msg = bot.send_message(message.chat.id, 'Сохранен рейтинг : ' + message.text + ' !')
-                bot.register_next_step_handler(msg, filterMenu)
-                filterMenu(message)
+
 
         def chooseSort(message):
             markup = types.ReplyKeyboardMarkup(row_width=6, resize_keyboard=True)
@@ -158,11 +194,15 @@ def mainMenu(message):
             bot.register_next_step_handler(msg, saveSort)
 
         def saveSort(message):
-            queries[message.chat.id].sort = sort[message.text]
-            msg = bot.send_message(message.chat.id, 'Сохранена сортировка : ' + message.text + ' !')
-            bot.register_next_step_handler(msg, filterMenu)
-            filterMenu(message)
-
+            if message.text in sort:
+                queries[message.chat.id].sort = sort[message.text]
+                msg = bot.send_message(message.chat.id, 'Сохранена сортировка : ' + message.text + ' !')
+                bot.register_next_step_handler(msg, filterMenu)
+                filterMenu(message)
+            else:
+                msg = bot.send_message(message.chat.id, 'Некорректные данные')
+                bot.register_next_step_handler(msg, filterMenu)
+                filterMenu(message)
 
         markup = types.ReplyKeyboardMarkup(row_width=5)
         itembtn1 = newButton('Радиус')
@@ -198,13 +238,23 @@ def mainMenu(message):
             itembtn4 = newButton('Главное меню')
             markup.add(itembtn1, itembtn2, itembtn4)
             dba.addToQueriesHistory(queries[message.chat.id], message.chat.id, getCorrectDate())
-            #q = Query(queries[message.chat.id].chipName)
-            #advList = [*q.getAds('Челябинск').__next__()]
+            # q = Query(queries[message.chat.id].chipName)
+            # advList = [*q.getAds('Челябинск').__next__()]
             advList = [*queries[message.chat.id].getAds('Челябинск').__next__()]
             msg = bot.send_message(message.chat.id, "Вы перешли в меню поиска", reply_markup=markup)
             bot.register_next_step_handler(msg, doSearch)
             doSearch(message, advList, 0)
         else:
+            radius = ""
+            rate = "Минимальный рейтинг продавца в звездах: "
+            if queries[message.chat.id].rad is None:
+                radius = "Не указан"
+            else:
+                radius = str(queries[message.chat.id].rad)
+            if queries[message.chat.id].sellerRate is None:
+                rate += "Не указан"
+            else:
+                rate += str(queries[message.chat.id].sellerRate)
             minPrice = "0"
             maxPrice = "Не указано"
             if queries[message.chat.id].minCost is not None:
@@ -213,13 +263,14 @@ def mainMenu(message):
                 maxPrice = str(queries[message.chat.id].maxCost)
             scatter = "Разброс: " + minPrice + " - " + maxPrice
             sortType = "Сортировка: " + str(get_key(sort, queries[message.chat.id].sort))
-            rate = "Минимальный рейтинг продавца в звездах: " + str(queries[message.chat.id].sellerRate)
-            bot.send_message(message.chat.id, 'Ваши текущие настройки:' + "\n" + "Радиус: " + str(queries[message.chat.id].rad) + "\n" +
-            scatter + "\n" + sortType + "\n" + "Видеокарта: " + queries[message.chat.id].chipName + "\n" +
-            rate, reply_markup=markup)
+            bot.send_message(message.chat.id,
+                             'Ваши текущие настройки:' + "\n" + "Радиус: " + radius + "\n" +
+                             scatter + "\n" + sortType + "\n" + "Видеокарта: " + queries[
+                                 message.chat.id].chipName + "\n" +
+                             rate, reply_markup=markup)
 
-    user = bot.get_chat(message.chat.id).username #для приветствия
-    usr = dba.getUser(message.chat.id)  #для обработки
+    user = bot.get_chat(message.chat.id).username  # для приветствия
+    usr = dba.getUser(message.chat.id)  # для обработки
     markup = types.ReplyKeyboardMarkup(row_width=4)
     itembtn1 = newButton('Сделать запрос')
     itembtn2 = newButton('Указать адрес')
@@ -250,6 +301,7 @@ def mainMenu(message):
         markup.add(itembtn6)
         msg = bot.send_message(message.chat.id, "Вы перешли в меню поиска", reply_markup=markup)
         bot.register_next_step_handler(msg, filterMenu)
+        filterMenu(message)
 
     elif message.text.lower() == 'указать адрес':
         msg = bot.send_message(message.chat.id, "Вы в меню выбора локации")
@@ -273,37 +325,55 @@ def mainMenu(message):
     elif message.text.lower() == 'история':
         queriesHistory = ""
         for query in dba.getQuriesHistory(message.chat.id):
+            radius = "Радиус: "
+            rate = "Минимальный рейтинг продавца в звездах: "
+            if query.rad is None:
+                radius += "Не указан, "
+            else:
+                radius += str(query.rad) + "км, "
+            if query.sellerRate is None:
+                rate += "Не указан, "
+            else:
+                rate += str(query.sellerRate)
             minPrice = "0"
             maxPrice = "Не указано"
-            if queries[message.chat.id].minCost is not None:
-                minPrice = str(queries[message.chat.id].minCost)
-            if queries[message.chat.id].maxCost is not None:
-                maxPrice = str(queries[message.chat.id].maxCost)
+            if query.minCost is not None:
+                minPrice = str(query.minCost)
+            if query.maxCost is not None:
+                maxPrice = str(query.maxCost)
             scatter = "Разброс: " + minPrice + " - " + maxPrice
             sortType = "Сортировка: " + str(get_key(sort, query.sort))
-            rate = "Минимальный рейтинг продавца в звездах: " + str(query.sellerRate)
-            queriesHistory += "Видеокарта: " + query.chipName + ", " + "Радиус: " + str(query.rad) + " км, " + scatter + ", " + "\n" + sortType + ", " + rate + "\n\n"
+            queriesHistory += "Видеокарта: " + query.chipName + ", " + radius + scatter + ", " + "\n" + sortType + ", " + rate + "\n\n"
         if not queriesHistory:
             msg = bot.send_message(message.chat.id, 'Ваша история пуста')
             bot.register_next_step_handler(msg, mainMenu)
         else:
             msg = bot.send_message(message.chat.id, queriesHistory)
             bot.register_next_step_handler(msg, mainMenu)
-    else:
+    elif message.text == 'Вы перешли в главное меню' or message.text == '/start' or message.text == 'Главное меню' or message.text == 'Вы ввели некорректные данные':
         bot.send_message(message.chat.id, "Здравствуйте, " + user + " ваш ID: " + str(
             message.chat.id) + ", Вы находитесь в главном меню. Выберите действие",
                          reply_markup=markup)
+    else:
+        bot.clear_step_handler_by_chat_id(message.chat.id)
+        msg = bot.send_message(message.chat.id, "Вы ввели некорректные данные", reply_markup=markup)
+        bot.register_next_step_handler(msg, mainMenu)
+
+
+def getUserAnswer(message, callback):
+    msg = bot.send_message(message, 'Неверные данные, попробуйте еще раз')
+    bot.register_next_step_handler(msg, callback)
 
 
 def doSearch(message, advList, index):
-    addbtn1 = types.InlineKeyboardButton(text = 'Добавить в избранное', callback_data=str(index))
-    addbtn2 = types.InlineKeyboardButton(text = 'Добавить в избранное', callback_data=str(index+1))
-    addbtn3 = types.InlineKeyboardButton(text = 'Добавить в избранное', callback_data=str(index+2))
+    addbtn1 = types.InlineKeyboardButton(text='Добавить в избранное', callback_data=str(index))
+    addbtn2 = types.InlineKeyboardButton(text='Добавить в избранное', callback_data=str(index + 1))
+    addbtn3 = types.InlineKeyboardButton(text='Добавить в избранное', callback_data=str(index + 2))
     markup = types.ReplyKeyboardMarkup(row_width=2)
     itembtn1 = newButton('⬅')
     itembtn2 = newButton('➡')
     itembtn4 = newButton('Главное меню')
-    markup.add(itembtn1, itembtn2,itembtn4)
+    markup.add(itembtn1, itembtn2, itembtn4)
     if message.text == 'Главное меню':
         bot.clear_step_handler_by_chat_id(message.chat.id)
         msg = bot.send_message(message.chat.id, "Вы перешли в главное меню")
@@ -315,32 +385,36 @@ def doSearch(message, advList, index):
             bot.register_next_step_handler(msg, doSearch, advList, index)
         else:
             counter = 0
-            for i in range(index-3, len(advList)):
+            for i in range(index - 3, len(advList)):
                 if counter < 3:
                     inlineMarkup = types.InlineKeyboardMarkup()
-                    inlineMarkup.add(types.InlineKeyboardButton(text='Добавить в избранное 💫', callback_data=str(index-3 + counter)))
-                    bot.send_message(message.chat.id, "Номер текущего объявления: " + str(i) + '\n' + advList[i].show(),reply_markup=inlineMarkup)
+                    inlineMarkup.add(types.InlineKeyboardButton(text='Добавить в избранное 💫',
+                                                                callback_data=str(index - 3 + counter)))
+                    bot.send_message(message.chat.id, "Номер текущего объявления: " + str(i) + '\n' + advList[i].show(),
+                                     reply_markup=inlineMarkup)
                     counter += 1
                 else:
                     break
             msg = bot.send_message(message.chat.id, 'Выберите действие')
-            bot.register_next_step_handler(msg, doSearch, advList, index-3)
+            bot.register_next_step_handler(msg, doSearch, advList, index - 3)
     elif message.text == '➡':
-        if index+3 >= len(advList):
+        if index + 3 >= len(advList):
             msg = bot.send_message(message.chat.id, 'Вы в конце списка')
             bot.register_next_step_handler(msg, doSearch, advList, index)
         else:
             counter = 0
-            for i in range(index+3, len(advList)):
+            for i in range(index + 3, len(advList)):
                 if counter < 3:
                     inlineMarkup = types.InlineKeyboardMarkup()
-                    inlineMarkup.add(types.InlineKeyboardButton(text='Добавить в избранное 💫', callback_data=str(index+3 + counter)))
-                    bot.send_message(message.chat.id, "Номер текущего объявления: " + str(i) + '\n' + advList[i].show(), reply_markup=inlineMarkup)
+                    inlineMarkup.add(types.InlineKeyboardButton(text='Добавить в избранное 💫',
+                                                                callback_data=str(index + 3 + counter)))
+                    bot.send_message(message.chat.id, "Номер текущего объявления: " + str(i) + '\n' + advList[i].show(),
+                                     reply_markup=inlineMarkup)
                     counter += 1
                 else:
                     break
             msg = bot.send_message(message.chat.id, 'Выберите действие')
-            bot.register_next_step_handler(msg, doSearch, advList, index+3)
+            bot.register_next_step_handler(msg, doSearch, advList, index + 3)
     else:
         bot.clear_step_handler_by_chat_id(message.chat.id)
         bot.send_message(message.chat.id, "Результаты поиска:")
@@ -348,8 +422,10 @@ def doSearch(message, advList, index):
         for i in range(index, len(advList)):
             if counter < 3:
                 inlineMarkup = types.InlineKeyboardMarkup()
-                inlineMarkup.add(types.InlineKeyboardButton(text = 'Добавить в избранное 💫', callback_data=str(index+counter)))
-                bot.send_message(message.chat.id, "Номер текущего объявления: " + str(i) + '\n' + advList[i].show(), reply_markup=inlineMarkup)
+                inlineMarkup.add(
+                    types.InlineKeyboardButton(text='Добавить в избранное 💫', callback_data=str(index + counter)))
+                bot.send_message(message.chat.id, "Номер текущего объявления: " + str(i) + '\n' + advList[i].show(),
+                                 reply_markup=inlineMarkup)
                 counter += 1
             else:
                 break
@@ -357,7 +433,7 @@ def doSearch(message, advList, index):
         bot.register_next_step_handler(msg, doSearch, advList, index)
 
 
-@bot.callback_query_handler(func = lambda call: True)
+@bot.callback_query_handler(func=lambda call: True)
 def addAdvinFvr(call):
     if call.data == 'remove':
         adv = call.message.text.split('\n')
@@ -365,15 +441,26 @@ def addAdvinFvr(call):
         bot.send_message(call.message.chat.id, 'Удалено!')
 
     else:
+
         arr = call.message.text.split('\n')
         link = arr[5]
         cost = arr[3]
         name = arr[1]
         adv = Advertisement(link=link, cost=cost, name=name)
-        dba.addToFavourite(adv, call.message.chat.id)
-        bot.send_message(call.message.chat.id, 'Добавлено в избранное')
+        favourites = dba.getFavourites(call.message.chat.id)
+        linksOfFav = map(lambda x: x.link, favourites)
+        if adv.link in linksOfFav:
+            bot.send_message(call.message.chat.id, 'Уже есть в избранном')
+        else:
+            dba.addToFavourite(adv, call.message.chat.id)
+            bot.send_message(call.message.chat.id, 'Добавлено в избранное')
 
 
+@bot.message_handler(content_types='text')
+def incorrectInput(message):
+    msg = bot.send_message(message.chat.id, "Зачем балуешься?")
+    bot.register_next_step_handler(msg, mainMenu)
+    mainMenu(message)
 
 
 bot.polling(none_stop=True)
