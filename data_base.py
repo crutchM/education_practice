@@ -3,7 +3,7 @@ import sqlite3
 
 class data_base:
     def __init__(self):
-        self.conn = sqlite3.connect('users.sql', check_same_thread=False)
+        self.conn = sqlite3.connect('users.db', check_same_thread=False)
         self.curr = self.conn.cursor()
         self.createDB()
 
@@ -42,7 +42,7 @@ class data_base:
                 filter_saller_rate DOUBLE,
                 sort_type INT,
                 query TEXT, 
-                qdate DATE,
+                qdate DATETIME,
                 FOREIGN KEY (usr) REFERENCES users(id)     
             );
         """)

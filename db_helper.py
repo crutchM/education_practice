@@ -23,7 +23,7 @@ class db_helper:
 
     def addToQueriesHistory(self, query, id, date):
         self.db.curr.execute("INSERT INTO queries VALUES(?,?,?,?,?,?,?,?);",
-                     (id, query.rad, query.minCost, query.maxCost, query.sellerRate, query.sort, query.chipName, date))
+                     (id, query.rad, query.minCost, query.maxCost, query.sellerRate, query.sort, query.chipName, date.strftime("%Y-%m-%d-%H:%M:%S")))
         self.db.conn.commit()
 
     def getFavourites(self, userid):
