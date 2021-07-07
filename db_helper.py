@@ -113,8 +113,7 @@ class db_helper:
 
     def getLastQuery(self, id):
         max_date = self.db.curr.execute("SELECT MAX(qdate) FROM queries WHERE usr = ?", (str(id),)).fetchone()
-        self.db.curr.execute("SELECT * FROM queries WHERE qdate = ?", (str(max_date),))
-        res = self.db.curr.fetchone()
+        res = self.db.curr.execute("SELECT * FROM queries WHERE qdate = ?", (str(max_date),)).fetchone()
         if res is None:
             return None
         else:
@@ -129,4 +128,25 @@ class db_helper:
         self.db.conn.commit()
     def delFromFav(self, user, link):
         self.db.currexecute("DELETE FROM favourites WHERE usr = ? AND link = ?", (user, link))
+        self.db.conn.commit()
+
+    def getFavouriteStat(self):
+        self.db.curr.execute("SELECT * from favourites")
+        rec = self.db.curr.fetchall()
+        res = []
+        for row in rec:
+            a = (row[0], row[1], row[2], row[3], row[4])
+            res.append(a)
+        return res
+
+    def getMonitoringStat(self):
+        rec = self.db.curr.execute("SELECT chip FROM price_spread_stat").fetchall()
+        res = []
+        for row in rec:
+            res.append(row[0])
+        return res
+
+    def statController(self, chip, avg_chel, avg_rus):
+        date = datetime.datetime.now().strftime("%y-%m-%d")
+        self.db.curr.execute("INSERT INTO avg_price_stat VALUES (?, ?, ?, ?)", (chip, str(avg_chel), str(date), str(avg_rus)))
         self.db.conn.commit()
