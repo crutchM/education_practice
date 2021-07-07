@@ -120,3 +120,7 @@ class db_helper:
     def updateLoc(self, id, location):
         self.db.curr.execute("UPDATE users set location = ? where id = ?", (location, id))
         self.db.conn.commit()
+
+    def updateUsrRole(self, id, role):
+        self.db.curr.execute("UPDATE users set role = ? where id = ?", (id, role))
+        self.db.conn.commit()
