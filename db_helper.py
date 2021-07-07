@@ -95,7 +95,7 @@ class db_helper:
         max_date = self.db.curr.fetchone()
         for id in list:
             self.updateOncePrice(id, self.db.curr.execute("SELECT price FROM favourites_price_change where id = ? AND fdate = ?",
-                                             (str(id), max_date)).fetchone())
+                                             (str(id), str(max_date))).fetchone())
         self.db.conn.commit()
 
     def updateOncePrice(self, id, sum):
@@ -112,10 +112,13 @@ class db_helper:
         return User(id=res[0], location=res[2], role=res[1], regDate=res[3])
 
     def getLastQuery(self, id):
-        max_date = self.db.curr.execute("SELECT MAX(qdate) from queries where usr = ?", (id,)).fetchone()
-        self.db.curr.execute("SELECT * FROM queries where qdate = ?", (max_date,))
+        max_date = self.db.curr.execute("SELECT MAX(qdate) FROM queries WHERE usr = ?", (str(id),)).fetchone()
+        self.db.curr.execute("SELECT * FROM queries WHERE qdate = ?", (str(max_date),))
         res = self.db.curr.fetchone()
-        return Query(chipName=res[6], sellerRate=res[4], minCost=res[2], maxCost=res[3], sort=res[5], rad=res[1])
+        if res is None:
+            return None
+        else:
+            return Query(chipName=res[6], sellerRate=res[4], minCost=res[2], maxCost=res[3], sort=res[5], rad=res[1])
 
     def updateLoc(self, id, location):
         self.db.curr.execute("UPDATE users set location = ? where id = ?", (location, id))
