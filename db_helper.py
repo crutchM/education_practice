@@ -92,7 +92,7 @@ class db_helper:
         for row in rec:
             list.append(row[0])
         self.db.curr.execute("SELECT MAX(fdate) FROM favourites_price_change ")
-        max_date = self.db.curr.fetchone()
+        max_date = self.db.curr.fetchone()[0]
         for id in list:
             self.updateOncePrice(id, self.db.curr.execute("SELECT price FROM favourites_price_change where id = ? AND fdate = ?",
                                              (str(id), str(max_date))).fetchone())
