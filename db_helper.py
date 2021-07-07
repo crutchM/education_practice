@@ -116,3 +116,4 @@ class db_helper:
         self.db.curr.execute("SELECT * FROM queries where qdate = ?", (max_date,))
         res = self.db.curr.fetchone()
         return Query(chipName=res[6], sellerRate=res[4], minCost=res[2], maxCost=res[3], sort=res[5], rad=res[1])
+
