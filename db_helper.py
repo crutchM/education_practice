@@ -112,7 +112,7 @@ class db_helper:
         return User(id=res[0], location=res[2], role=res[1], regDate=res[3])
 
     def getLastQuery(self, id):
-        max_date = self.db.curr.execute("SELECT MAX(qdate) FROM queries WHERE usr = ?", (str(id),)).fetchone()
+        max_date = self.db.curr.execute("SELECT MAX(qdate) FROM queries WHERE usr = ?", (str(id),)).fetchone()[0]
         res = self.db.curr.execute("SELECT * FROM queries WHERE qdate = ?", (str(max_date),)).fetchone()
         if res is None:
             return None

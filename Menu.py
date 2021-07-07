@@ -36,24 +36,36 @@ def start(message):
         mainMenu(message)
     else:
         bot.send_message(message.chat.id, 'Добро пожаловать')
-        bot.send_message(message.chat.id, 'Укажите свое местоположение в формате: "город улица дом"')
-        msg = bot.send_message(message.chat.id, "Пример: Челябинск Молодогвардейцев 16")
-        bot.register_next_step_handler(msg, savePlace, message)
+        bot.send_message(message.chat.id, 'Укажите город')
+        msg = bot.send_message(message.chat.id, "Пример: Челябинск")
+        bot.register_next_step_handler(msg, choosePlace, message)
 
 
-def savePlace(message, msge=None):
+
+def choosePlace(message, msge=None):
+    def saveCity(city):
+        return city.lower().replace(' ', '-')
+
     bot.clear_step_handler_by_chat_id(message.chat.id)
-    if len(message.text.split(' ')) == 3:
-        msg = bot.send_message(message.chat.id, "Сохранено местоположение: " + message.text + " !")
-        if dba.isUsrExists(message.chat.id):
-            dba.updateLoc(message.chat.id, message.text)
-        else:
-            registerUser(message, message.text)
-            bot.register_next_step_handler(msg, mainMenu)
-            mainMenu(msge)
+    city = saveCity(message.text)
+
+    msg = bot.send_message(message.chat.id, "Введите улицу и дом, например: Молодогвардейцев 74")
+    bot.register_next_step_handler(msg, chooseStreet, city, msge)
+
+
+
+def chooseStreet(message, city, msge):
+    if msge.text == 'Указать адрес':
+        msge.text = '/start'
+    bot.clear_step_handler_by_chat_id(message.chat.id)
+    if dba.isUsrExists(message.chat.id):
+        dba.updateLoc(message.chat.id, city + " " + message.text)
+        bot.register_next_step_handler(msge, mainMenu)
+        mainMenu(msge)
     else:
-        msg = bot.send_message(message.chat.id, 'Некорректные данные, попробуйте еще раз')
-        bot.register_next_step_handler(msg, savePlace)
+        registerUser(message, city + " " + message.text)
+        bot.register_next_step_handler(msge, mainMenu)
+        mainMenu(msge)
 
 
 def registerUser(message, location):
@@ -64,8 +76,10 @@ def registerUser(message, location):
 def mainMenu(message):
     queries = {}
     lastQuery = dba.getLastQuery(message.chat.id)
-    queries[message.chat.id] = Query(sort=101, chipName='2070', sellerRate=None)
-
+    if lastQuery is None:
+        queries[message.chat.id] = Query(sort=101, chipName='2070', sellerRate=None)
+    else:
+        queries[message.chat.id] = lastQuery
     def filterMenu(message):
         def chooseVideocard(message):
             msg = bot.send_message(message.chat.id, "Введите модель видеокарты",
@@ -173,7 +187,10 @@ def mainMenu(message):
                     bot.register_next_step_handler(msg, filterMenu)
                     filterMenu(message)
                 else:
-                    queries[message.chat.id].sellerRate = float(message.text)
+                    if float(message.text) == 0:
+                        queries[message.chat.id].sellerRate = None
+                    else:
+                        queries[message.chat.id].sellerRate = float(message.text)
                     msg = bot.send_message(message.chat.id, 'Сохранен рейтинг : ' + message.text + ' !')
                     bot.register_next_step_handler(msg, filterMenu)
                     filterMenu(message)
@@ -305,9 +322,9 @@ def mainMenu(message):
 
     elif message.text.lower() == 'указать адрес':
         msg = bot.send_message(message.chat.id, "Вы в меню выбора локации")
-        bot.send_message(message.chat.id, 'Укажите свое местоположение в формате: "город улица дом"')
-        bot.send_message(message.chat.id, 'Пример: Челябинск Молодогвардейцев 16')
-        bot.register_next_step_handler(msg, savePlace)
+        bot.send_message(message.chat.id, 'Укажите город')
+        msg = bot.send_message(message.chat.id, "Пример: Челябинск")
+        bot.register_next_step_handler(msg, choosePlace, message)
 
     elif message.text.lower() == 'избранное':
         advList = dba.getFavourites(message.chat.id)
@@ -352,7 +369,7 @@ def mainMenu(message):
             bot.register_next_step_handler(msg, mainMenu)
     elif message.text == 'Вы перешли в главное меню' or message.text == '/start' or message.text == 'Главное меню' or message.text == 'Вы ввели некорректные данные':
         bot.send_message(message.chat.id, "Здравствуйте, " + user + " ваш ID: " + str(
-            message.chat.id) + ", Вы находитесь в главном меню. Выберите действие",
+            message.chat.id) + ", Ваш адрес: " + usr.location + ", Вы находитесь в главном меню. Выберите действие",
                          reply_markup=markup)
     else:
         bot.clear_step_handler_by_chat_id(message.chat.id)
