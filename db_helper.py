@@ -122,5 +122,5 @@ class db_helper:
         self.db.conn.commit()
 
     def updateUsrRole(self, id, role):
-        self.db.curr.execute("UPDATE users set role = ? where id = ?", (id, role))
+        self.db.curr.execute("UPDATE users set role = ? where id = ?", (role, id))
         self.db.conn.commit()
