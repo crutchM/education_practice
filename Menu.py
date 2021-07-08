@@ -7,7 +7,6 @@ import datetime
 from Query import Query
 from Ad import Advertisement
 
-now = datetime.datetime.now()
 bot = telebot.TeleBot('1860264884:AAGUDK2euWD_2UswRfGzyc_i-Hqz0MTJu7o')
 sort = {'По умолчанию': 101, 'Дешевле': 1, 'Дороже': 2, 'По дате (новые)': 104}
 testInc = 0
@@ -25,7 +24,8 @@ def newButton(text):
 
 
 def getCorrectDate():
-    return now.strftime("%y-%m-%d")
+    return datetime.datetime.today().strftime("%Y-%m-%d-%H:%M:%S")
+
 
 
 @bot.message_handler(commands=['start'])
@@ -53,6 +53,20 @@ def choosePlace(message, msge=None):
     bot.register_next_step_handler(msg, chooseStreet, city, msge)
 
 
+def selectUser(message, usersDict):
+    msg = bot.send_message(message.chat.id, 'Напишите роль user или admin')
+    bot.register_next_step_handler(msg, saveUserRole, get_key(usersDict, message.text))
+
+
+def saveUserRole(message, id):
+    bot.clear_step_handler_by_chat_id(message.chat.id) #не факт что нужно
+    dba.updateUsrRole(id, message.text)
+    bot.clear_step_handler_by_chat_id(message.chat.id)
+    msg = bot.send_message(message.chat.id, "Вы перешли в главное меню")
+    message.text = '/start'
+    bot.register_next_step_handler(msg, mainMenu)
+    mainMenu(message)
+
 
 def chooseStreet(message, city, msge):
     if msge.text == 'Указать адрес':
@@ -69,8 +83,7 @@ def chooseStreet(message, city, msge):
 
 
 def registerUser(message, location):
-    user = User(id=message.chat.id, location=location, role="user", regDate=now.strftime("%y-%m-%d"))
-    dba.addUser(user)
+    dba.addUser(message.chat.id, 'admin', location, regDate=getCorrectDate())
 
 
 def mainMenu(message):
@@ -257,10 +270,27 @@ def mainMenu(message):
             dba.addToQueriesHistory(queries[message.chat.id], message.chat.id, getCorrectDate())
             # q = Query(queries[message.chat.id].chipName)
             # advList = [*q.getAds('Челябинск').__next__()]
-            advList = [*queries[message.chat.id].getAds('Челябинск').__next__()]
-            msg = bot.send_message(message.chat.id, "Вы перешли в меню поиска", reply_markup=markup)
-            bot.register_next_step_handler(msg, doSearch)
-            doSearch(message, advList, 0)
+            advList = [*queries[message.chat.id].getAds(usr.location.split(' ')[0]).__next__()]
+            if len(advList) != 0:
+                msg = bot.send_message(message.chat.id, "Вы перешли в меню поиска", reply_markup=markup)
+                bot.register_next_step_handler(msg, doSearch)
+                doSearch(message, advList, 0)
+            else:
+                markup = types.ReplyKeyboardMarkup(row_width=5)
+                itembtn1 = newButton('Радиус')
+                itembtn2 = newButton('Цены')
+                itembtn3 = newButton('Рейтинг продавца')
+                itembtn4 = newButton('Сортировка')
+                itembtn5 = newButton('Модель видеокарты')
+                itembtn6 = newButton('Главное меню')
+                itembtn7 = newButton('Выполнить поиск')
+                markup.add(itembtn1, itembtn2, itembtn3, itembtn4, itembtn5)
+                markup.add(itembtn7)
+                markup.add(itembtn6)
+                msg = bot.send_message(message.chat.id, "Не найдено объявлений по таким фильтрам", reply_markup=markup)
+                bot.register_next_step_handler(msg, filterMenu)
+
+
         else:
             radius = ""
             rate = "Минимальный рейтинг продавца в звездах: "
@@ -320,6 +350,18 @@ def mainMenu(message):
         bot.register_next_step_handler(msg, filterMenu)
         filterMenu(message)
 
+    elif message.text.lower() == 'изменить роль' and dba.getUser(message.chat.id).role == 'admin':
+        usersId = dba.getUsersId()
+        users = {}
+        usersString = ""
+        for id in usersId:
+            username = bot.get_chat(id).username
+            users[id] = username
+            usersString += "Id: " + str(id) + " : user: " + "@" + username + "; "
+        bot.send_message(message.chat.id, usersString)
+        msg = bot.send_message(message.chat.id, "Введите username пользователя")
+        bot.register_next_step_handler(msg, selectUser, users)
+
     elif message.text.lower() == 'указать адрес':
         msg = bot.send_message(message.chat.id, "Вы в меню выбора локации")
         bot.send_message(message.chat.id, 'Укажите город')
@@ -349,7 +391,7 @@ def mainMenu(message):
             else:
                 radius += str(query.rad) + "км, "
             if query.sellerRate is None:
-                rate += "Не указан, "
+                rate += "Не указан"
             else:
                 rate += str(query.sellerRate)
             minPrice = "0"
@@ -455,6 +497,7 @@ def addAdvinFvr(call):
     if call.data == 'remove':
         adv = call.message.text.split('\n')
         dba.delFromFav(call.message.chat.id, adv[4])
+        bot.delete_message(call.message.chat.id, call.message.id)
         bot.send_message(call.message.chat.id, 'Удалено!')
 
     else:
