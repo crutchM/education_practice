@@ -45,7 +45,7 @@ class db_helper:
         return recordslist
 
     def getVisits(self):
-        self.db.curr.execute("SELECT q.vdate, count(*) FROM queries q group by q.vdate;")
+        self.db.curr.execute("SELECT strftime('%y-%m-%d', q.vdate), count(*) FROM queries q group by strftime('%y-%m-%d', q.vdate);")
         records = self.db.curr.fetchall()
         stat = dict(string, int)  # format yyyy-mm-dd
         for row in records:
@@ -180,6 +180,9 @@ class db_helper:
             res.append(row[0])
         return res
 
-    def changeRole(self, id, role):
-        self.db.curr.execute("UPDATE users SET role = ? WHERE id = ?", (role, str(id)))
-        self.db.conn.commit()
+    def getUsrsByDate(self):
+        rec = self.db.curr.execute("SELECT count(*) from USERS group by register_date").fetchall()
+        res = []
+        for row in rec:
+            res.append((row[0], row[1]))
+        return res
