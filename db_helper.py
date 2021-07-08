@@ -127,6 +127,8 @@ class db_helper:
     def getUser(self, id):
         self.db.curr.execute("SELECT * FROM users WHERE id = ?", (str(id),))
         res = self.db.curr.fetchone()
+        if res is None:
+            return None
         return User(id=res[0], location=res[2], role=res[1], regDate=res[3])
 
     def getLastQuery(self, id):
