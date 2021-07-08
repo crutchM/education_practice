@@ -5,6 +5,7 @@ from Query import Query
 from Ad import Advertisement
 from user import User
 class db_helper:
+
     def __init__(self):
         self.db = data_base.data_base()
 
@@ -91,12 +92,22 @@ class db_helper:
         list = []
         for row in rec:
             list.append(row[0])
-        self.db.curr.execute("SELECT MAX(fdate) FROM favourites_price_change ")
-        max_date = self.db.curr.fetchone()[0]
+        self.db.curr.execute("SELECT fdate FROM favourites_price_change ")
+        recs = self.db.curr.fetchall()
+        max_date = datetime.datetime.strptime("2020-07-07-22:15:10", "%Y-%m-%d-%H:%M:%S")
+        for row in recs:
+            cur_row = datetime.datetime.strptime(row[2], "%Y-%m-%d-%H:%M:%S")
+            if max_date < cur_row:
+                max_date = cur_row
         for id in list:
-            self.updateOncePrice(id, self.db.curr.execute("SELECT price FROM favourites_price_change where id = ? AND fdate = ?",
-                                             (str(id), str(max_date))).fetchone())
+            self.updateOncePrice(id, self.getSum(id, max_date))
         self.db.conn.commit()
+
+    def getSum(self, id, maxDate):
+        recs = self.db.curr.execute("SELECT * FROM favourites_price_change").fetchall()
+        for row in recs:
+            if row[0] == id and maxDate == datetime.datetime.strptime(row[2], "%Y-%m-%d-%H:%M:%S"):
+                return int(row[1])
 
     def updateOncePrice(self, id, sum):
         self.db.curr.execute("UPDATE favourites set price = ? where id = ?", (str(sum), str(id)))
@@ -106,10 +117,10 @@ class db_helper:
         self.db.curr.execute("INSERT INTO users VALUES(?,?,?,?);", (str(123), "usr.role", "usr.location", "2021-09-09"))
         self.db.curr.execute("INSERT INTO queries VALUES(?,?,?,?,?,?,?,?);",
                              (123, 3, 3, 5, 5, 1, "aboba",
-                              "2021-09-09-21:55:09"))
+                              "2021-09-09-21:57:22"))
         self.db.curr.execute("INSERT INTO queries VALUES(?,?,?,?,?,?,?,?);",
-                             (123, 4, 4, 6, 6, 1, "aboba",
-                              "2021-09-09-21:55:10"))
+                             (123, 4, 4, 6, 6, 1, "eboba",
+                              "2021-09-09-21:56:10"))
 
         self.db.conn.commit()
         return self.db.curr.execute("SELECT * FROM users").fetchone()
@@ -142,7 +153,7 @@ class db_helper:
         self.db.currexecute("DELETE FROM favourites WHERE usr = ? AND link = ?", (user, link))
         self.db.conn.commit()
 
-    def getFavouriteStat(self):
+    def getFavouritesTuple(self):
         self.db.curr.execute("SELECT * from favourites")
         rec = self.db.curr.fetchall()
         res = []
@@ -151,14 +162,14 @@ class db_helper:
             res.append(a)
         return res
 
-    def getMonitoringStat(self):
+    def getChips(self):
         rec = self.db.curr.execute("SELECT chip FROM price_spread_stat").fetchall()
         res = []
         for row in rec:
             res.append(row[0])
         return res
 
-    def statController(self, chip, avg_chel, avg_rus):
+    def addToPriceStat(self, chip, avg_chel, avg_rus):
         date = datetime.datetime.now().strftime("%y-%m-%d")
         self.db.curr.execute("INSERT INTO avg_price_stat VALUES (?, ?, ?, ?)", (chip, str(avg_chel), str(date), str(avg_rus)))
         self.db.conn.commit()
