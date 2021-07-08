@@ -173,3 +173,9 @@ class db_helper:
         date = datetime.datetime.now().strftime("%y-%m-%d")
         self.db.curr.execute("INSERT INTO avg_price_stat VALUES (?, ?, ?, ?)", (chip, str(avg_chel), str(date), str(avg_rus)))
         self.db.conn.commit()
+
+    def getUsersId(self):
+        res = []
+        for row in self.db.curr.execute("SELECT id FROM users").fetchall():
+            res.append(row[0])
+        return res
