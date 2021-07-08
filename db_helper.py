@@ -179,3 +179,7 @@ class db_helper:
         for row in self.db.curr.execute("SELECT id FROM users").fetchall():
             res.append(row[0])
         return res
+
+    def changeRole(self, id, role):
+        self.db.curr.execute("UPDATE users SET role = ? WHERE id = ?", (role, str(id)))
+        self.db.conn.commit()
