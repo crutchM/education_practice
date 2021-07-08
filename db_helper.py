@@ -8,8 +8,8 @@ class db_helper:
     def __init__(self):
         self.db = data_base.data_base()
 
-    def addUser(self, usr):
-        self.db.curr.execute("INSERT INTO users VALUES(?,?,?,?);", (str(usr.id), usr.role, usr.location, usr.regDate))
+    def addUser(self, id, role, location, regDate):
+        self.db.curr.execute("INSERT INTO users VALUES(?,?,?,?);", (str(id), role, location, regDate))
         self.db.conn.commit()
 
     def isUsrExists(self, user):
@@ -105,11 +105,11 @@ class db_helper:
     def doTest(self):
         self.db.curr.execute("INSERT INTO users VALUES(?,?,?,?);", (str(123), "usr.role", "usr.location", "2021-09-09"))
         self.db.curr.execute("INSERT INTO queries VALUES(?,?,?,?,?,?,?,?);",
-                             (123, 4, 4, 6, 6, 1, "aboba",
-                              "2021-09-09-21:55:010"))
-        self.db.curr.execute("INSERT INTO queries VALUES(?,?,?,?,?,?,?,?);",
                              (123, 3, 3, 5, 5, 1, "aboba",
                               "2021-09-09-21:55:09"))
+        self.db.curr.execute("INSERT INTO queries VALUES(?,?,?,?,?,?,?,?);",
+                             (123, 4, 4, 6, 6, 1, "aboba",
+                              "2021-09-09-21:55:10"))
 
         self.db.conn.commit()
         return self.db.curr.execute("SELECT * FROM users").fetchone()
@@ -119,15 +119,17 @@ class db_helper:
         return User(id=res[0], location=res[2], role=res[1], regDate=res[3])
 
     def getLastQuery(self, id):
-        max_date = self.db.curr.execute("SELECT qdate FROM  queries WHERE usr = ? ", (str(id),)).fetchone()[0]
-        if max_date is None:
-            return None
-        else:
-            res = self.db.curr.execute("SELECT * FROM queries WHERE qdate = ?", (str(max_date),)).fetchone()
-            if res is None:
-                return None
-            else:
-                return Query(chipName=res[6], sellerRate=res[4], minCost=res[2], maxCost=res[3], sort=res[5], rad=res[1])
+        recs = self.db.curr.execute("SELECT * FROM  queries WHERE usr = ?", (str(id),)).fetchall()
+        max_date = datetime.datetime.strptime("2020-07-07-22:15:10", "%Y-%m-%d-%H:%M:%S")
+        for row in recs:
+            cur_row = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S")
+            if max_date < cur_row:
+                max_date = cur_row
+        for row in recs:
+            cur_row = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S")
+            if max_date == cur_row:
+                return Query(chipName=row[6], sort=row[5], sellerRate=row[4], rad=row[1], minCost=row[2], maxCost=row[3])
+
 
     def updateLoc(self, id, location):
         self.db.curr.execute("UPDATE users set location = ? where id = ?", (location, id))
