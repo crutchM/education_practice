@@ -120,11 +120,14 @@ class db_helper:
 
     def getLastQuery(self, id):
         max_date = self.db.curr.execute("SELECT qdate FROM  queries WHERE usr = ? ", (str(id),)).fetchone()[0]
-        res = self.db.curr.execute("SELECT * FROM queries WHERE qdate = ?", (str(max_date),)).fetchone()
-        if res is None:
+        if max_date is None:
             return None
         else:
-            return Query(chipName=res[6], sellerRate=res[4], minCost=res[2], maxCost=res[3], sort=res[5], rad=res[1])
+            res = self.db.curr.execute("SELECT * FROM queries WHERE qdate = ?", (str(max_date),)).fetchone()
+            if res is None:
+                return None
+            else:
+                return Query(chipName=res[6], sellerRate=res[4], minCost=res[2], maxCost=res[3], sort=res[5], rad=res[1])
 
     def updateLoc(self, id, location):
         self.db.curr.execute("UPDATE users set location = ? where id = ?", (location, id))
