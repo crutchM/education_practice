@@ -233,4 +233,8 @@ class db_helper:
             res_date.append(row[1])
             res_price.append(row[0])
         return (res_date, res_price)
-
+    def getChips(self, id):
+        rec = []
+        for row in self.db.curr.execute("SELECT * FROM cardList WHERE usr = ?",(str(id),)).fetchall():
+            rec.append(row[0])
+        return rec
