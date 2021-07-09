@@ -8,10 +8,12 @@ from db_helper import db_helper
 import numpy as np
 import scipy.stats as stats
 import matplotlib.pyplot as plt
+
 dbh = db_helper()
 
-def buildPriceSpreadChart(chip: str): #график разброса цены
-    values = dbh.getSpreadVal(chip) #0 рос 1 чел
+
+def buildPriceSpreadChart(chip: str):  # график разброса цены
+    values = dbh.getSpreadVal(chip)  # 0 рос 1 чел
     stat = [values[1], values[0]]
     label = ['Челябинская область', 'Россия']
     for i in range(2):
@@ -30,17 +32,19 @@ def buildPriceSpreadChart(chip: str): #график разброса цены
     return plt.savefig()
 
 
-def buildHistChart(date: list, values: list, ylabel: str, title: str): #график изменения цены со временем
+def buildHistChart(date: list, values: list, ylabel: str, title: str):  # график изменения цены со временем
+    date = ['1', '2', '3', '4']
+    values = [1, 2, 3, 4]
     plt.plot(date, values)
 
     plt.xlabel("День")
     plt.ylabel(ylabel)
     plt.title(title)
-    plt.legend()
-    return plt.savefig()
+
+    return plt.savefig('huita.png')
 
 
-def buildNewUsersChart(): #график регистраций в день пользователь
+def buildNewUsersChart():  # график регистраций в день пользователь
     data = dbh.getUsrsByDate()
     date, count = [], []
     for d in data:
@@ -49,7 +53,7 @@ def buildNewUsersChart(): #график регистраций в день по�
     return buildHistChart(date=date, values=count, ylabel='кол-во новеньких', title='Регистраций в день')
 
 
-def buildVisitsChart(): #график посещений
+def buildVisitsChart():  # график посещений
     data = dbh.getVisits()
     date, count = [], []
     for d in data:
@@ -57,15 +61,15 @@ def buildVisitsChart(): #график посещений
         count.append(date[d])
     return buildHistChart(date=date, values=count, ylabel='кол-во посещений', title='Посещений в день')
 
+
 def buildFavouritesPriceChart(id, link):
     data = dbh.getDateAndPrices(id, link)
     date, price = data[0], data[1]
-    return buildHistChart(date=date,values=price, ylabel='стоимость', title='Изменение цены товара')
-
+    return buildHistChart(date=date, values=price, ylabel='стоимость', title='Изменение цены товара')
 
 
 def buildAvgPriceChart(chip: str):
-    data = dbh.getPriceAndDateList() #0 rus 1 chel 2 date
+    data = dbh.getPriceAndDateList()  # 0 rus 1 chel 2 date
     date, val = data[2], [data[0], data[1]]
     label = ['Россия', 'Челябинская область']
     for i in range(2):
@@ -74,17 +78,17 @@ def buildAvgPriceChart(chip: str):
     plt.xlabel("День")
     plt.ylabel('Средняя стоимость')
     plt.title('Изменение средней цены отслеживаемого')
-    plt.legend()
-    return plt.savefig()
+
+    return plt.savefig('huita.png')
 
 
-def getMonitoringStat(): #херня сама записывает стату из списка мониторинга в две таблицы
+def getMonitoringStat():  # херня сама записывает стату из списка мониторинга в две таблицы
     locations = ['челябинская_область', 'россия']
     chips = dbh.getChips()
 
     for chip in chips:
-        averages = [] #первое среднее челябы для чипа, второе для россии
-        spread_values = []  #первое разброс челябы для чипа, второе для россии
+        averages = []  # первое среднее челябы для чипа, второе для россии
+        spread_values = []  # первое разброс челябы для чипа, второе для россии
 
         for loc in locations:
             temp_chip = prepareChipToMonitor(chip)
@@ -105,7 +109,7 @@ def getMonitoringStat(): #херня сама записывает стату и
 
 
 def getFavouritesStat():
-    fav = dbh.getFavourites() #получаю список избранного из бд 0-id,  1-usr , 2-link TEXT,  3-price, 4-name TEXT,
+    fav = dbh.getFavourites()  # получаю список избранного из бд 0-id,  1-usr , 2-link TEXT,  3-price, 4-name TEXT,
     ap = AvitoParser()
 
     for f in fav:
@@ -122,8 +126,11 @@ def attachLists(generator):
         values.extend(i)
     return values
 
+
 def prepareChipToMonitor(chip: str):
     tok = chip.split('+')
     tok[0] = f'%27{tok[0]}%27'
     return ' '.join(tok)
 
+
+buildHistChart([], [], 'asda', 'dasd')
