@@ -183,7 +183,7 @@ class db_helper:
         return res
 
     def getUsrsByDate(self):
-        rec = self.db.curr.execute("SELECT count(*) from USERS group by register_date").fetchall()
+        rec = self.db.curr.execute("SELECT register_date, count(*) from USERS group by register_date").fetchall()
         res = []
         for row in rec:
             res.append((row[0], row[1]))
