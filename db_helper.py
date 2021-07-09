@@ -61,7 +61,7 @@ class db_helper:
         return stat
 
     def getCountByDate(self, date):
-        return int(self.db.curr.execute("SELECT count(*) FROM queries where qdate = ?", str(date)).fetchall())
+        return int(self.db.curr.execute("SELECT count(*) FROM queries where qdate = ?", (str(date),)).fetchall())
 
     def getLocation(self, id):
         self.db.curr.execute("SELECT location FROM users WHERE id = ?;", (str(id),))
