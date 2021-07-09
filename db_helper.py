@@ -188,3 +188,7 @@ class db_helper:
         for row in rec:
             res.append((row[0], row[1]))
         return res
+
+    def getSpreadVal(self, chip):
+        rec = self.db.curr.execute("SELECT * FROM price_spread_stat WHERE chip = ?", (chip,)).fetchone()
+        return (rec[1], rec[2])
