@@ -45,7 +45,7 @@ class db_helper:
         return recordslist
 
     def getVisits(self):
-        self.db.curr.execute("SELECT strftime('%y-%m-%d', q.vdate), count(*) FROM queries q group by strftime('%y-%m-%d', q.qdate);")
+        self.db.curr.execute("SELECT strftime('%y-%m-%d', q.qdate), count(*) FROM queries q group by strftime('%y-%m-%d', q.qdate);")
         records = self.db.curr.fetchall()
         stat = dict(string, int)  # format yyyy-mm-dd
         for row in records:
