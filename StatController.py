@@ -33,8 +33,6 @@ def buildPriceSpreadChart(chip: str):  # график разброса цены
 
 
 def buildHistChart(date: list, values: list, ylabel: str, title: str):  # график изменения цены со временем
-    date = ['1', '2', '3', '4']
-    values = [1, 2, 3, 4]
     plt.plot(date, values)
 
     plt.xlabel("День")
@@ -57,8 +55,8 @@ def buildVisitsChart():  # график посещений
     data = dbh.getVisits()
     date, count = [], []
     for d in data:
-        date.append(d)
-        count.append(date[d])
+        date.append(d[0])
+        count.append(d[1])
     return buildHistChart(date=date, values=count, ylabel='кол-во посещений', title='Посещений в день')
 
 
@@ -109,13 +107,14 @@ def getMonitoringStat():  # херня сама записывает стату 
 
 
 def getFavouritesStat():
-    fav = dbh.getFavourites()  # получаю список избранного из бд 0-id,  1-usr , 2-link TEXT,  3-price, 4-name TEXT,
+    fav = dbh.getFavourites() #получаю список избранного из бд 0-id,  1-usr , 2-link TEXT,  3-price, 4-name TEXT,
     ap = AvitoParser()
-
+    favs = [(f[0],f[2]) for f in fav]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=30) as executor:
+        fav = list(executor.map(ap.parsePrice, favs))
     for f in fav:
         id = f[0]
-        link = f[2]
-        price = ap.parsePrice(link)
+        price = f[1]
         dbh.AddToFavChanges(id, price)
     dbh.updatePrices()
 
@@ -132,5 +131,3 @@ def prepareChipToMonitor(chip: str):
     tok[0] = f'%27{tok[0]}%27'
     return ' '.join(tok)
 
-
-buildHistChart([], [], 'asda', 'dasd')
