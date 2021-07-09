@@ -192,3 +192,14 @@ class db_helper:
     def getSpreadVal(self, chip):
         rec = self.db.curr.execute("SELECT * FROM price_spread_stat WHERE chip = ?", (chip,)).fetchone()
         return (rec[1], rec[2])
+
+    def getDateAndPrices(self, id, link):
+        ident = self.db.curr.execute("SELECT id FROM favourites WHERE usr = ? AND link = ?", (str(id), link)).fetchone()
+        self.db.curr.execute("SELECT price, fdate FROM favourites_price_changes WHERE id = ?", (str(ident[0])))
+        rec = self.db.curr.fetchall()
+        res_date = []
+        res_price = []
+        for row in rec:
+            res_date.append(row[1])
+            res_price.append(row[0])
+        return (res_date, res_price)
