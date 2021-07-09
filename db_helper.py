@@ -10,7 +10,7 @@ class db_helper:
         self.db = data_base.data_base()
 
     def addUser(self, id, role, location, regDate):
-        self.db.curr.execute("INSERT INTO users VALUES(?,?,?,?);", (str(id), role, location, regDate))
+        self.db.curr.execute("INSERT INTO users VALUES(?,?,?,?);", (str(id), role, location, datetime.datetime.now().strftime("%y-%m-%d")))
         self.db.conn.commit()
 
     def isUsrExists(self, user):
@@ -216,7 +216,7 @@ class db_helper:
         rec = self.db.curr.execute("SELECT register_date, count(*) from USERS group by register_date").fetchall()
         res = []
         for row in rec:
-            res.append((datetime.datetime.strptime(row[0], "%Y-%m-%d-%H:%M:%S").strftime("%y-%m-%d"), row[1]))
+            res.append((row[0], row[1]))
         return res
 
     def getSpreadVal(self, chip):
