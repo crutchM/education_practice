@@ -47,9 +47,9 @@ class db_helper:
     def getVisits(self):
         self.db.curr.execute("SELECT strftime('%y-%m-%d', q.qdate), count(*) FROM queries q group by strftime('%y-%m-%d', q.qdate);")
         records = self.db.curr.fetchall()
-        stat = dict(string, int)  # format yyyy-mm-dd
+        stat = []  # format yyyy-mm-dd
         for row in records:
-            stat.update(row[0], row[1])
+            stat.append((row[0], row[1]))
         return stat
 
     def getLocation(self, id):
