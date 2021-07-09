@@ -5,9 +5,7 @@ class Advertisement:
         self.name = name
         self.link = link
 
-    #метод ожидает свой парсер с возможностью воткнуть фильтр
-
     def show(self):
-        return str(self.name) + "\n\n" +  str(self.cost) + "\n\n" +  str(self.link)
+        return str(self.name) + "\n\n" + str(self.cost) + "\n\n" + str(self.link)
 
 

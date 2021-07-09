@@ -54,18 +54,25 @@ def choosePlace(message, msge=None):
 
 
 def selectUser(message, usersDict):
-    msg = bot.send_message(message.chat.id, 'Напишите роль user или admin')
-    bot.register_next_step_handler(msg, saveUserRole, get_key(usersDict, message.text))
-
-
-def saveUserRole(message, id):
     bot.clear_step_handler_by_chat_id(message.chat.id) #не факт что нужно
-    dba.updateUsrRole(id, message.text)
-    bot.clear_step_handler_by_chat_id(message.chat.id)
-    msg = bot.send_message(message.chat.id, "Вы перешли в главное меню")
-    message.text = '/start'
-    bot.register_next_step_handler(msg, mainMenu)
-    mainMenu(message)
+    msg = bot.send_message(message.chat.id, 'Напишите роль user или admin')
+    bot.register_next_step_handler(msg, saveUserRole, get_key(usersDict, message.text), usersDict)
+
+
+def saveUserRole(message, id, usersDict):
+    bot.clear_step_handler_by_chat_id(message.chat.id) #не факт что нужно
+    if message.text.lower() == 'user' or message.text.lower() == 'admin':
+        dba.updateUsrRole(id, message.text.lower())
+        bot.clear_step_handler_by_chat_id(message.chat.id)
+        msg = bot.send_message(message.chat.id, "Вы перешли в главное меню")
+        message.text = '/start'
+        bot.register_next_step_handler(msg, mainMenu)
+        mainMenu(message)
+    else:
+        msg = bot.send_message(message.chat.id, 'Некорректные данные')
+        bot.register_next_step_handler(msg, selectUser, usersDict)
+        selectUser(message, usersDict)
+
 
 
 def chooseStreet(message, city, msge):
@@ -84,6 +91,17 @@ def chooseStreet(message, city, msge):
 
 def registerUser(message, location):
     dba.addUser(message.chat.id, 'admin', location, regDate=getCorrectDate())
+
+
+def chipMonitoring(message):
+    if message.text == "Добавить чип":
+        pass
+    elif message.text == "Удалить чип":
+        pass
+    elif message.text == "Статистика по чипу":
+        pass
+    else:
+        pass
 
 
 def mainMenu(message):
@@ -154,12 +172,14 @@ def mainMenu(message):
                                        reply_markup=types.ReplyKeyboardRemove())
                 bot.register_next_step_handler(msg, ifMaxPrice)
             else:
-                bot.send_message(message.chat.id, 'ошибка')
+                msg = bot.send_message(message.chat.id, 'Некорректные жанные')
+                bot.register_next_step_handler(msg, filterMenu)
+                filterMenu(message)
 
         def ifMinPrice(message):
             if message.text.isdigit():
                 queries[message.chat.id].minCost = int(message.text)
-                msg = bot.send_message(message.chat.id, 'Сохранена минмальная цена : ' + message.text + ' !')
+                msg = bot.send_message(message.chat.id, 'Сохранена минимальная цена : ' + message.text + ' !')
                 bot.register_next_step_handler(msg, filterMenu)
                 filterMenu(message)
             else:
@@ -367,6 +387,17 @@ def mainMenu(message):
         bot.send_message(message.chat.id, 'Укажите город')
         msg = bot.send_message(message.chat.id, "Пример: Челябинск")
         bot.register_next_step_handler(msg, choosePlace, message)
+
+    elif message.text.lower() == 'мониторинг чипов':
+        markup = types.ReplyKeyboardMarkup(row_width=3)
+        itembtn1 = newButton('Добавить чип')
+        itembtn2 = newButton('Удалить чип')
+        itembtn3 = newButton('Статистика по чипу')
+        itembtn4 = newButton('Главное меню')
+        markup.add(itembtn1, itembtn2, itembtn3)
+        markup.add(itembtn4)
+        msg = bot.send_message(message.chat.id, "Вы в меню выбора чипов", reply_markup=markup)
+        bot.register_next_step_handler(msg, chipMonitoring)
 
     elif message.text.lower() == 'избранное':
         advList = dba.getFavourites(message.chat.id)
