@@ -57,7 +57,7 @@ class db_helper:
                 u_date.append(d1)
         stat = []
         for i in range(0, len(u_date)):
-            stat.append(unic_date[i].strftime("%y-%m-%d"), self.getCountByDate(u_date[i]))
+            stat.append((unic_date[i].strftime("%y-%m-%d"), self.getCountByDate(u_date[i])))
         return stat
 
     def getCountByDate(self, date):
