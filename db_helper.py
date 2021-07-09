@@ -139,6 +139,18 @@ class db_helper:
         self.db.curr.execute("INSERT INTO queries VALUES(?,?,?,?,?,?,?,?);",
                              (123, 4, 4, 6, 6, 1, "eboba",
                               "2021-09-09-21:56:10"))
+        self.db.curr.execute("INSERT INTO queries VALUES(?,?,?,?,?,?,?,?);",
+                             (123, 4, 4, 6, 6, 1, "eboba",
+                              "2021-09-10-21:56:10"))
+        self.db.curr.execute("INSERT INTO queries VALUES(?,?,?,?,?,?,?,?);",
+                             (123, 4, 4, 6, 6, 1, "eboba",
+                              "2021-09-10-21:56:10"))
+        self.db.curr.execute("INSERT INTO queries VALUES(?,?,?,?,?,?,?,?);",
+                             (123, 4, 4, 6, 6, 1, "eboba",
+                              "2021-09-11-21:56:10"))
+        self.db.curr.execute("INSERT INTO queries VALUES(?,?,?,?,?,?,?,?);",
+                             (123, 4, 4, 6, 6, 1, "eboba",
+                              "2021-09-11-21:56:10"))
 
         self.db.conn.commit()
         return self.db.curr.execute("SELECT * FROM users").fetchone()
@@ -204,7 +216,7 @@ class db_helper:
         rec = self.db.curr.execute("SELECT register_date, count(*) from USERS group by register_date").fetchall()
         res = []
         for row in rec:
-            res.append((row[0], row[1]))
+            res.append((datetime.datetime.strptime(row[0], "%Y-%m-%d-%H:%M:%S").strftime("%y-%m-%d"), row[1]))
         return res
 
     def getSpreadVal(self, chip):
@@ -221,3 +233,4 @@ class db_helper:
             res_date.append(row[1])
             res_price.append(row[0])
         return (res_date, res_price)
+
