@@ -38,8 +38,9 @@ def buildHistChart(date: list, values: list, ylabel: str, title: str):  # гра
     plt.xlabel("День")
     plt.ylabel(ylabel)
     plt.title(title)
-
-    return plt.savefig('huita.png')
+    png = plt.savefig('huita.png')
+    plt.clf()
+    return png
 
 
 def buildNewUsersChart():  # график регистраций в день пользователь
