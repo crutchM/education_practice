@@ -56,7 +56,7 @@ class db_helper:
                 unic_date.append(d)
                 u_date.append(d1)
         stat = []
-        for i in range(0, u_date.count()):
+        for i in range(0, len(u_date)):
             stat.append((unic_date[i], self.getCountByDate(u_date[i])))
         return stat
 
