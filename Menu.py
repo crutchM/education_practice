@@ -6,6 +6,7 @@ from user import User
 import datetime
 from Query import Query
 from Ad import Advertisement
+import StatController as sc
 
 bot = telebot.TeleBot('1860264884:AAGUDK2euWD_2UswRfGzyc_i-Hqz0MTJu7o')
 sort = {'По умолчанию': 101, 'Дешевле': 1, 'Дороже': 2, 'По дате (новые)': 104}
@@ -27,7 +28,6 @@ def getCorrectDate():
     return datetime.datetime.today().strftime("%Y-%m-%d-%H:%M:%S")
 
 
-
 @bot.message_handler(commands=['start'])
 def start(message):
     if dba.isUsrExists(message.chat.id):
@@ -41,7 +41,6 @@ def start(message):
         bot.register_next_step_handler(msg, choosePlace, message)
 
 
-
 def choosePlace(message, msge=None):
     def saveCity(city):
         return city.lower().replace(' ', '-')
@@ -53,14 +52,94 @@ def choosePlace(message, msge=None):
     bot.register_next_step_handler(msg, chooseStreet, city, msge)
 
 
+def statMenu(message):
+    bot.clear_step_handler_by_chat_id(message.chat.id)
+    if message.text.lower() == 'новые пользователи':
+        newUsersStat(message)
+    elif message.text.lower() == 'запросы по дням':
+        visitsStat(message)
+    elif message.text.lower() == 'история запросов':
+        queriesStat(message)
+    else:
+        msg = bot.send_message(message.chat.id, "Вы перешли в главное меню")
+        bot.register_next_step_handler(msg, mainMenu)
+        mainMenu(message)
+
+def newUsersStat(message):
+    sc.buildNewUsersChart()
+    bot.send_photo(message.chat.id, photo=open('huita.png', 'rb'))
+    bot.clear_step_handler_by_chat_id(message.chat.id)
+    msg = bot.send_message(message.chat.id, 'Вы в главном меню')
+    bot.register_next_step_handler(msg, mainMenu)
+    message.text = '/start'
+    mainMenu(message)
+
+
+def visitsStat(message):
+    sc.buildVisitsChart()
+    bot.send_photo(message.chat.id, photo=open('huita.png', 'rb'))
+    bot.clear_step_handler_by_chat_id(message.chat.id)
+    msg = bot.send_message(message.chat.id, 'Вы в главном меню')
+    bot.register_next_step_handler(msg, mainMenu)
+    message.text = '/start'
+    mainMenu(message)
+
+def queriesStat(message):
+    usersId = dba.getUsersId()
+    users = {}
+    usersString = "Users: "
+    for id in usersId:
+        username = bot.get_chat(id).username
+        users[id] = username
+        usersString += "@" + username + ", "
+    bot.send_message(message.chat.id, usersString)
+    msg = bot.send_message(message.chat.id, 'Напишите ник пользователя без \'@\' ')
+    bot.register_next_step_handler(msg, sendQueriesStatByUser, users)
+
+
+def sendQueriesStatByUser(message, dict):
+    if message.text in dict.values() and dba.isUsrExists(get_key(dict, message.text)):
+        queriesHistory = ""
+        for query in dba.getQuriesHistory(get_key(dict, message.text)):
+            radius = "Радиус: "
+            rate = "Минимальный рейтинг продавца в звездах: "
+            if query.rad is None:
+                radius += "Не указан, "
+            else:
+                radius += str(query.rad) + "км, "
+            if query.sellerRate is None:
+                rate += "Не указан"
+            else:
+                rate += str(query.sellerRate)
+            minPrice = "0"
+            maxPrice = "Не указано"
+            if query.minCost is not None:
+                minPrice = str(query.minCost)
+            if query.maxCost is not None:
+                maxPrice = str(query.maxCost)
+            scatter = "Разброс: " + minPrice + " - " + maxPrice
+            sortType = "Сортировка: " + str(get_key(sort, query.sort))
+            queriesHistory += "Видеокарта: " + query.chipName + ", " + radius + scatter + ", " + "\n" + sortType + ", " + rate + "\n\n"
+        if not queriesHistory:
+            msg = bot.send_message(message.chat.id, 'История юзера пуста')
+            bot.register_next_step_handler(msg, mainMenu)
+        else:
+            msg = bot.send_message(message.chat.id, queriesHistory)
+            bot.register_next_step_handler(msg, mainMenu)
+    bot.clear_step_handler_by_chat_id(message.chat.id)
+    msg = bot.send_message(message.chat.id, 'Вы в главном меню')
+    bot.register_next_step_handler(msg, mainMenu)
+    message.text = '/start'
+    mainMenu(message)
+
 def selectUser(message, usersDict):
-    bot.clear_step_handler_by_chat_id(message.chat.id) #не факт что нужно
+    bot.clear_step_handler_by_chat_id(message.chat.id)  # не факт что нужно
     msg = bot.send_message(message.chat.id, 'Напишите роль user или admin')
     bot.register_next_step_handler(msg, saveUserRole, get_key(usersDict, message.text), usersDict)
 
 
 def saveUserRole(message, id, usersDict):
-    bot.clear_step_handler_by_chat_id(message.chat.id) #не факт что нужно
+    bot.clear_step_handler_by_chat_id(message.chat.id)  # не факт что нужно
     if message.text.lower() == 'user' or message.text.lower() == 'admin':
         dba.updateUsrRole(id, message.text.lower())
         bot.clear_step_handler_by_chat_id(message.chat.id)
@@ -72,7 +151,6 @@ def saveUserRole(message, id, usersDict):
         msg = bot.send_message(message.chat.id, 'Некорректные данные')
         bot.register_next_step_handler(msg, selectUser, usersDict)
         selectUser(message, usersDict)
-
 
 
 def chooseStreet(message, city, msge):
@@ -111,6 +189,7 @@ def mainMenu(message):
         queries[message.chat.id] = Query(sort=101, chipName='2070', sellerRate=None)
     else:
         queries[message.chat.id] = lastQuery
+
     def filterMenu(message):
         def chooseVideocard(message):
             msg = bot.send_message(message.chat.id, "Введите модель видеокарты",
@@ -194,7 +273,8 @@ def mainMenu(message):
                     mincost = queries[message.chat.id].minCost
 
                 if int(message.text) < mincost:
-                    msg = bot.send_message(message.chat.id, 'Максимальная цена должна быть больше или равна минимальной!')
+                    msg = bot.send_message(message.chat.id,
+                                           'Максимальная цена должна быть больше или равна минимальной!')
                     bot.register_next_step_handler(msg, filterMenu)
                     filterMenu(message)
                 else:
@@ -231,7 +311,6 @@ def mainMenu(message):
                 msg = bot.send_message(message.chat.id, 'Некорректные данные')
                 bot.register_next_step_handler(msg, filterMenu)
                 filterMenu(message)
-
 
         def chooseSort(message):
             markup = types.ReplyKeyboardMarkup(row_width=6, resize_keyboard=True)
@@ -373,11 +452,11 @@ def mainMenu(message):
     elif message.text.lower() == 'изменить роль' and dba.getUser(message.chat.id).role == 'admin':
         usersId = dba.getUsersId()
         users = {}
-        usersString = ""
+        usersString = "Users: "
         for id in usersId:
             username = bot.get_chat(id).username
             users[id] = username
-            usersString += "Id: " + str(id) + " : user: " + "@" + username + "; "
+            usersString +="@" + username + ", "
         bot.send_message(message.chat.id, usersString)
         msg = bot.send_message(message.chat.id, "Введите username пользователя")
         bot.register_next_step_handler(msg, selectUser, users)
@@ -387,6 +466,17 @@ def mainMenu(message):
         bot.send_message(message.chat.id, 'Укажите город')
         msg = bot.send_message(message.chat.id, "Пример: Челябинск")
         bot.register_next_step_handler(msg, choosePlace, message)
+
+    elif message.text.lower() == 'просмотр статистики':
+        markup = types.ReplyKeyboardMarkup(row_width=3)
+        btn1 = newButton('Новые пользователи')
+        btn2 = newButton('Запросы по дням')
+        btn3 = newButton('История запросов')
+        btn4 = newButton('Главное меню')
+        markup.add(btn1, btn2, btn3, btn4)
+        msg = bot.send_message(message.chat.id, "Выберите статистику", reply_markup=markup)
+        bot.register_next_step_handler(msg, statMenu)
+
 
     elif message.text.lower() == 'мониторинг чипов':
         markup = types.ReplyKeyboardMarkup(row_width=3)

@@ -101,7 +101,7 @@ class AvitoParser:
         href = 'https://www.avito.ru' + link.get('href')
         name = link.select_one('h3.title-root-395AQ.iva-item-title-1Rmmj.title-listRedesign-3RaU2').string.strip()
         price = self.getPrice(ad, "price-text-1HrJ_ text-text-1PdBw text-size-s-1PUdo")
-        return Adverticement(cost=price, name=name, link=href)
+        return Advertisement(cost=price, name=name, link=href)
 
     def getPrice(self, ad: bs4.element.Tag, cls: str):
         return self.cleanPrice(ad.find('span', {"class" : cls}).text)

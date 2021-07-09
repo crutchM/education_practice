@@ -1,9 +1,5 @@
-import random
-
-import pylab as pl
 from avitoParser import AvitoParser
 from Query import Query
-from Ad import Adverticement
 from db_helper import db_helper
 import numpy as np
 import scipy.stats as stats
@@ -28,18 +24,21 @@ def buildPriceSpreadChart(chip: str):  # график разброса цены
 
     plt.xlabel("Стоимость")
     plt.title("Разброс цен на видеокарты")
-    plt.legend()
-    return plt.savefig()
+    png = plt.savefig('huita.png')
+    plt.clf()
+    return png
 
 
 def buildHistChart(date: list, values: list, ylabel: str, title: str):  # график изменения цены со временем
+
     plt.plot(date, values)
 
     plt.xlabel("День")
     plt.ylabel(ylabel)
     plt.title(title)
-
-    return plt.savefig('huita.png')
+    png = plt.savefig('huita.png')
+    plt.clf()
+    return png
 
 
 def buildNewUsersChart():  # график регистраций в день пользователь
@@ -57,7 +56,7 @@ def buildVisitsChart():  # график посещений
     for d in data:
         date.append(d[0])
         count.append(d[1])
-    return buildHistChart(date=date, values=count, ylabel='кол-во посещений', title='Посещений в день')
+    return buildHistChart(date=date, values=count, ylabel='кол-во посещений', title='Запросов в день')
 
 
 def buildFavouritesPriceChart(id, link):
@@ -76,8 +75,9 @@ def buildAvgPriceChart(chip: str):
     plt.xlabel("День")
     plt.ylabel('Средняя стоимость')
     plt.title('Изменение средней цены отслеживаемого')
-
-    return plt.savefig('huita.png')
+    png = plt.savefig('huita.png')
+    plt.clf()
+    return png
 
 
 def getMonitoringStat():  # херня сама записывает стату из списка мониторинга в две таблицы
