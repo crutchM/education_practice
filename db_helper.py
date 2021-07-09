@@ -50,21 +50,23 @@ class db_helper:
         unic_date = []
         u_date = []# format yyyy-mm-dd
         for row in records:
-            d = datetime.datetime.strptime(datetime.datetime.strftime(datetime.datetime.strptime(row[7],"%Y-%m-%d-%H:%M:%S"), "%y-%m-%d"), "%y-%m-%d")
+            d = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S").strftime("%y-%m-%d")
             d1 = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S")
-            if d not in u_date:
-                unic_date.append(d)
+            if d1 not in u_date:
                 u_date.append(d1)
+                if d not in unic_date:
+                    unic_date.append(d)
         stat = []
-        for i in range(0, len(u_date)):
-            stat.append((unic_date[i].strftime("%y-%m-%d"), self.getCountByDate(unic_date[i])))
+        for i in range(0, len(unic_date)):
+            stat.append((unic_date[i], self.getCountByDate(unic_date[i])))
         return stat
 
     def getCountByDate(self, date):
         rec = self.db.curr.execute("SELECT * FROM queries").fetchall()
         count = 0
         for row in rec:
-            if datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S").strftime("%y-%m-%d") == date:
+            d = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S").strftime("%y-%m-%d")
+            if  d == date:
                 count += 1
         return count
 
