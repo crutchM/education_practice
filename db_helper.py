@@ -57,11 +57,16 @@ class db_helper:
                 u_date.append(d1)
         stat = []
         for i in range(0, len(u_date)):
-            stat.append((unic_date[i], self.getCountByDate(u_date[i])))
+            stat.append(unic_date[i].strftime("%y-%m-%d"), self.getCountByDate(u_date[i]))
         return stat
 
     def getCountByDate(self, date):
-        return int(self.db.curr.execute("SELECT count(*) FROM queries where qdate = ?", (str(date),)).fetchall())
+        rec = self.db.curr.execute("SELECT * FROM queries").fetchall()
+        count = 0
+        for row in rec:
+            if datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S") == date:
+                count += 1
+        return count
 
     def getLocation(self, id):
         self.db.curr.execute("SELECT location FROM users WHERE id = ?;", (str(id),))
