@@ -59,7 +59,7 @@ def buildVisitsChart():  # график посещений
     for d in data:
         date.append(d[0])
         count.append(d[1])
-    return buildHistChart(date=date, values=count, ylabel='кол-во посещений', title='Посещений в день')
+    return buildHistChart(date=date, values=count, ylabel='кол-во посещений', title='Запросов в день')
 
 
 def buildFavouritesPriceChart(id, link):
