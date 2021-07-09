@@ -52,7 +52,7 @@ class db_helper:
         for row in records:
             d = datetime.datetime.strptime(datetime.datetime.strftime(datetime.datetime.strptime(row[7],"%Y-%m-%d-%H:%M:%S"), "%y-%m-%d"), "%y-%m-%d")
             d1 = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S")
-            if d not in unic_date:
+            if d not in u_date:
                 unic_date.append(d)
                 u_date.append(d1)
         stat = []
