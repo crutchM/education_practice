@@ -45,16 +45,23 @@ class db_helper:
         return recordslist
 
     def getVisits(self):
-        self.db.curr.execute(
-            "SELECT strftime('%d-%m-%Y', fieldname), count(*) FROM queries q group by strftime('%d-%m-%Y', fieldname);")
-        records = self.db.curr.fetchall()
-        stat = []  # format yyyy-mm-dd
+        ##self.db.curr.execute("SELECT strftime('%y-%m-%d', q.qdate), count(*) FROM queries q group by strftime('%y-%m-%d', q.qdate);")
+        records = self.db.curr.execute("SELECT * FROM queries")
+        unic_date = []
+        u_date = []# format yyyy-mm-dd
         for row in records:
-            stat.append((row[0], row[1]))
+            d = datetime.datetime.strptime(datetime.datetime.strftime(datetime.datetime.strptime(row[7],"%Y-%m-%d-%H:%M:%S"), "%y-%m-%d"), "%y-%m-%d")
+            d1 = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S")
+            if d not in unic_date:
+                unic_date.append(d)
+                u_date.append(d1)
+        stat = []
+        for i in range(0, len(u_date)):
+            stat.append((unic_date[i], self.getCountByDate(u_date[i])))
         return stat
 
     def getCountByDate(self, date):
-        return int(self.db.curr.execute("SELECT count(*) FROM queries where qdate = ?", str(date)).fetchall())
+        return int(self.db.curr.execute("SELECT count(*) FROM queries where qdate = ?", (str(date),)).fetchall())
 
     def getLocation(self, id):
         self.db.curr.execute("SELECT location FROM users WHERE id = ?;", (str(id),))
