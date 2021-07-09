@@ -9,7 +9,7 @@ class db_helper:
     def __init__(self):
         self.db = data_base.data_base()
 
-    def addUser(self, id, role, location, regDate):
+    def addUser(self, id, role, location):
         self.db.curr.execute("INSERT INTO users VALUES(?,?,?,?);", (str(id), role, location, datetime.datetime.now().strftime("%y-%m-%d")))
         self.db.conn.commit()
 
