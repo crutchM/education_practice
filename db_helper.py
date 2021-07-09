@@ -45,12 +45,12 @@ class db_helper:
         return recordslist
 
     def getVisits(self):
-        self.db.curr.execute("SELECT strftime('%y-%m-%d', q.qdate), count(*) FROM queries q group by strftime('%y-%m-%d', q.qdate);")
+        ##self.db.curr.execute("SELECT strftime('%y-%m-%d', q.qdate), count(*) FROM queries q group by strftime('%y-%m-%d', q.qdate);")
         records = self.db.curr.execute("SELECT * FROM queries")
         unic_date = []
         u_date = []# format yyyy-mm-dd
         for row in records:
-            d = datetime.datetime.strptime(row[7], "%y-%m-%d")
+            d = datetime.datetime.strptime(datetime.datetime.strftime(row[7], "%y-%m-%d"), "%y-%m-%d")
             d1 = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S")
             if d not in unic_date:
                 unic_date.append(d)
