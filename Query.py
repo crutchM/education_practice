@@ -2,9 +2,8 @@ from avitoParser import AvitoParser
 from AvitoTransliterator import Transliterator
 from geopy.geocoders import GoogleV3
 geolocator = GoogleV3(api_key="AIzaSyCs-97Y3vAIXiP5R0IjXAhYXh3L54qSf3A")
-
 class Query:
-    def __init__(self,  chipName, sellerRate=None, minCost=None, maxCost=None, sort=None, rad=None):
+    def __init__(self,  chipName: str, sellerRate=None, minCost=None, maxCost=None, sort=None, rad=None):
         self.rad = rad
         self.chipName = chipName
         self.sellerRate = sellerRate
@@ -36,5 +35,4 @@ class Query:
     def getAds(self, location: str):
         pars = AvitoParser()
         url = self.makeURL(location)
-        filt = lambda x: pars.ratingFilter(x, self.sellerRate) if self.sellerRate is not None else lambda x: True
-        return pars.getAds(url, lambda x: pars.parseAd(x, filt))
+        return pars.getAds(url, self.sellerRate)
