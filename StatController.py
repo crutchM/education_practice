@@ -28,8 +28,9 @@ def buildPriceSpreadChart(chip: str):  # график разброса цены
 
     plt.xlabel("Стоимость")
     plt.title("Разброс цен на видеокарты")
-    plt.legend()
-    return plt.savefig()
+    png = plt.savefig('huita.png')
+    plt.clf()
+    return png
 
 
 def buildHistChart(date: list, values: list, ylabel: str, title: str):  # график изменения цены со временем
@@ -77,8 +78,9 @@ def buildAvgPriceChart(chip: str):
     plt.xlabel("День")
     plt.ylabel('Средняя стоимость')
     plt.title('Изменение средней цены отслеживаемого')
-
-    return plt.savefig('huita.png')
+    png = plt.savefig('huita.png')
+    plt.clf()
+    return png
 
 
 def getMonitoringStat():  # херня сама записывает стату из списка мониторинга в две таблицы
