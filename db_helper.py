@@ -45,7 +45,7 @@ class db_helper:
         return recordslist
 
     def getVisits(self):
-        self.db.curr.execute("SELECT TRUNC(TO_DATE(q.qdate), 'DDD'), count(*) FROM queries q group by TRUNC(TO_DATE(q.qdate), 'DDD');")
+        self.db.curr.execute("SELECT to_char(q.qdate, 'dd/mm/yyyy'), count(*) FROM queries q group by to_char(q.qdate, 'dd/mm/yyyy');")
         records = self.db.curr.fetchall()
         stat = []  # format yyyy-mm-dd
         for row in records:
