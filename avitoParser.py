@@ -71,7 +71,7 @@ class AvitoParser:
         return int(pc.string.strip()) if pc is not None else 0
 
     def getAds(self, url: str, sellerRating: float):
-        r = self.session.get(url)
+        r = self.session.get(url) #
         if r.status_code != 200:
             r = getResponse(url)
         soup = BeautifulSoup(r.text, 'lxml')
