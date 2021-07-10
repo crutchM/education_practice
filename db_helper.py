@@ -1,7 +1,6 @@
 import data_base
 import datetime
 import string
-import StatController as sc
 from Query import Query
 from Ad import Advertisement
 from user import User
@@ -28,21 +27,13 @@ class db_helper:
                      (id, query.rad, query.minCost, query.maxCost, query.sellerRate, query.sort, query.chipName, date))
         self.db.conn.commit()
 
-    # def getFavourites(self, userid):
-    #     self.db.curr.execute("SELECT * FROM FAVOURITES WHERE usr = " + str(userid) + ";")
-    #     records = self.db.curr.fetchall()
-    #     recordslist = []
-    #     for row in records:
-    #         recordslist.append(Advertisement(cost=row[3], name=row[4], link=row[2]))
-    #     return recordslist
-
     def getFavourites(self, userid):
         self.db.curr.execute("SELECT * FROM FAVOURITES WHERE usr = " + str(userid) + ";")
         records = self.db.curr.fetchall()
         recordslist = []
         for row in records:
             recordslist.append(Advertisement(cost=row[3], name=row[4], link=row[2]))
-        return sc.getFavsWithStatus(recordslist)
+        return recordslist
 
     def getQuriesHistory(self, userid):
         self.db.curr.execute("SELECT * FROM queries WHERE usr = ?;", (str(userid),))
@@ -59,18 +50,25 @@ class db_helper:
         unic_date = []
         u_date = []# format yyyy-mm-dd
         for row in records:
-            d = datetime.datetime.strptime(datetime.datetime.strftime(datetime.datetime.strptime(row[7],"%Y-%m-%d-%H:%M:%S"), "%y-%m-%d"), "%y-%m-%d")
+            d = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S").strftime("%y-%m-%d")
             d1 = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S")
-            if d not in unic_date:
-                unic_date.append(d)
+            if d1 not in u_date:
                 u_date.append(d1)
+                if d not in unic_date:
+                    unic_date.append(d)
         stat = []
-        for i in range(0, len(u_date)):
-            stat.append((unic_date[i], self.getCountByDate(u_date[i])))
+        for i in range(0, len(unic_date)):
+            stat.append((unic_date[i], self.getCountByDate(unic_date[i])))
         return stat
 
     def getCountByDate(self, date):
-        return int(self.db.curr.execute("SELECT count(*) FROM queries where qdate = ?", (str(date),)).fetchall())
+        rec = self.db.curr.execute("SELECT * FROM queries").fetchall()
+        count = 0
+        for row in rec:
+            d = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S").strftime("%y-%m-%d")
+            if  d == date:
+                count += 1
+        return count
 
     def getLocation(self, id):
         self.db.curr.execute("SELECT location FROM users WHERE id = ?;", (str(id),))
@@ -98,7 +96,7 @@ class db_helper:
         return (avg_rus, avg_chel, date)
 
     def addCard(self, user, card):
-        self.db.curr.execute("INSERT INTO cardList VALUES (?,?)", (card, str(user)))
+        self.db.curr.execute("INSERT INTO cardList VALUES (?,?)", (card, user))
         self.db.conn.commit()
 
     def AddToFavChanges(self, id, price):
@@ -184,7 +182,7 @@ class db_helper:
         self.db.curr.execute("UPDATE users set role = ? where id = ?", (role, id))
         self.db.conn.commit()
     def delFromFav(self, user, link):
-        self.db.curr.execute("DELETE FROM favourites WHERE usr = ? AND link = ?", (user, link))
+        self.db.currexecute("DELETE FROM favourites WHERE usr = ? AND link = ?", (user, link))
         self.db.conn.commit()
 
     def getFavouritesTuple(self):
@@ -235,16 +233,8 @@ class db_helper:
             res_date.append(row[1])
             res_price.append(row[0])
         return (res_date, res_price)
-
-    def getChipsByID(self, id):
+    def getChips(self, id):
         rec = []
         for row in self.db.curr.execute("SELECT * FROM cardList WHERE usr = ?",(str(id),)).fetchall():
             rec.append(row[0])
         return rec
-
-    def deleteCard(self, id, card_name):
-        self.db.curr.execute("DELETE FROM cardList WHERE usr = ? AND card_name = ?", (str(id), card_name))
-        self.db.conn.commit()
-
-
-
