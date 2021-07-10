@@ -1,6 +1,7 @@
 import data_base
 import datetime
 import string
+import StatController as sc
 from Query import Query
 from Ad import Advertisement
 from user import User
@@ -27,13 +28,21 @@ class db_helper:
                      (id, query.rad, query.minCost, query.maxCost, query.sellerRate, query.sort, query.chipName, date))
         self.db.conn.commit()
 
+    # def getFavourites(self, userid):
+    #     self.db.curr.execute("SELECT * FROM FAVOURITES WHERE usr = " + str(userid) + ";")
+    #     records = self.db.curr.fetchall()
+    #     recordslist = []
+    #     for row in records:
+    #         recordslist.append(Advertisement(cost=row[3], name=row[4], link=row[2]))
+    #     return recordslist
+
     def getFavourites(self, userid):
         self.db.curr.execute("SELECT * FROM FAVOURITES WHERE usr = " + str(userid) + ";")
         records = self.db.curr.fetchall()
         recordslist = []
         for row in records:
             recordslist.append(Advertisement(cost=row[3], name=row[4], link=row[2]))
-        return recordslist
+        return sc.getFavsWithStatus(recordslist)
 
     def getQuriesHistory(self, userid):
         self.db.curr.execute("SELECT * FROM queries WHERE usr = ?;", (str(userid),))
@@ -50,25 +59,18 @@ class db_helper:
         unic_date = []
         u_date = []# format yyyy-mm-dd
         for row in records:
-            d = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S").strftime("%y-%m-%d")
+            d = datetime.datetime.strptime(datetime.datetime.strftime(datetime.datetime.strptime(row[7],"%Y-%m-%d-%H:%M:%S"), "%y-%m-%d"), "%y-%m-%d")
             d1 = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S")
-            if d1 not in u_date:
+            if d not in unic_date:
+                unic_date.append(d)
                 u_date.append(d1)
-                if d not in unic_date:
-                    unic_date.append(d)
         stat = []
-        for i in range(0, len(unic_date)):
-            stat.append((unic_date[i], self.getCountByDate(unic_date[i])))
+        for i in range(0, len(u_date)):
+            stat.append((unic_date[i], self.getCountByDate(u_date[i])))
         return stat
 
     def getCountByDate(self, date):
-        rec = self.db.curr.execute("SELECT * FROM queries").fetchall()
-        count = 0
-        for row in rec:
-            d = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S").strftime("%y-%m-%d")
-            if  d == date:
-                count += 1
-        return count
+        return int(self.db.curr.execute("SELECT count(*) FROM queries where qdate = ?", (str(date),)).fetchall())
 
     def getLocation(self, id):
         self.db.curr.execute("SELECT location FROM users WHERE id = ?;", (str(id),))
