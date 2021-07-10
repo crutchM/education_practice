@@ -61,10 +61,11 @@ class AvitoParser:
             'Accept-Language': 'ru',
         }
 
-    def isAvailable(self, url):
+    def isAvailable(self, ad: Advertisement):
+        url = ad.link
         r = getResponse(url)
         warn = BeautifulSoup(r.text, 'lxml').select('a.item-closed-warning')
-        return True if not warn else False
+        return (ad, True) if not warn else (ad, False)
 
     def getAdsCount(self, soup: BeautifulSoup):
         pc = soup.select_one('span.page-title-count-1oJOc')
@@ -140,3 +141,4 @@ class AvitoParser:
 
     def getResponse(self, url):
         return getResponse(url)
+

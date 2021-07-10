@@ -134,3 +134,8 @@ def prepareChipToMonitor(chip: str):
     tok[0] = f'%27{tok[0]}%27'
     return ' '.join(tok)
 
+def getFavsWithStatus(ads: list):
+    ap = AvitoParser()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(ads)) as executor:
+        favs = list(executor.map(ap.isAvailable, ads))
+    return favs
