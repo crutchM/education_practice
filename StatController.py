@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 dbh = db_helper()
 
 
-def buildPriceSpreadChart(chip: str):  # график разброса цены
+def buildPriceSpreadChart(chip: str):  # график разброса ценыы
     values = dbh.getSpreadVal(chip)  # 0 рос 1 чел
     stat = [values[1], values[0]]
     label = ['Челябинская область', 'Россия']
