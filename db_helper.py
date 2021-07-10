@@ -1,7 +1,6 @@
 import data_base
 import datetime
 import string
-import StatController as sc
 from Query import Query
 from Ad import Advertisement
 from user import User
@@ -28,21 +27,14 @@ class db_helper:
                      (id, query.rad, query.minCost, query.maxCost, query.sellerRate, query.sort, query.chipName, date))
         self.db.conn.commit()
 
-    # def getFavourites(self, userid):
-    #     self.db.curr.execute("SELECT * FROM FAVOURITES WHERE usr = " + str(userid) + ";")
-    #     records = self.db.curr.fetchall()
-    #     recordslist = []
-    #     for row in records:
-    #         recordslist.append(Advertisement(cost=row[3], name=row[4], link=row[2]))
-    #     return recordslist
-
     def getFavourites(self, userid):
         self.db.curr.execute("SELECT * FROM FAVOURITES WHERE usr = " + str(userid) + ";")
         records = self.db.curr.fetchall()
         recordslist = []
         for row in records:
             recordslist.append(Advertisement(cost=row[3], name=row[4], link=row[2]))
-        return sc.getFavsWithStatus(recordslist)
+        return recordslist
+
 
     def getQuriesHistory(self, userid):
         self.db.curr.execute("SELECT * FROM queries WHERE usr = ?;", (str(userid),))
