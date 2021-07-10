@@ -66,7 +66,7 @@ def buildFavouritesPriceChart(id, link):
 
 
 def buildAvgPriceChart(chip: str):
-    data = dbh.getPriceAndDateList()  # 0 rus 1 chel 2 date
+    data = dbh.getPriceAndDateList(chip)  # 0 rus 1 chel 2 date
     date, val = data[2], [data[0], data[1]]
     label = ['Россия', 'Челябинская область']
     for i in range(2):
