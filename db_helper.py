@@ -240,4 +240,9 @@ class db_helper:
             rec.append(row[0])
         return rec
 
+    def deleteCard(self, id, card_name):
+        self.db.curr.execute("DELETE FROM cardList WHERE usr = ? AND card_name = ?", (str(id), card_name))
+        self.db.conn.commit()
+
+
 
