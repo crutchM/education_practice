@@ -96,7 +96,7 @@ class db_helper:
         return (avg_rus, avg_chel, date)
 
     def addCard(self, user, card):
-        self.db.curr.execute("INSERT INTO cardList VALUES (?,?)", (card, user))
+        self.db.curr.execute("INSERT INTO cardList VALUES (?,?)", (card, str(user)))
         self.db.conn.commit()
 
     def AddToFavChanges(self, id, price):
@@ -233,8 +233,13 @@ class db_helper:
             res_date.append(row[1])
             res_price.append(row[0])
         return (res_date, res_price)
-    def getChips(self, id):
+
+    def getChipsByID(self, id):
         rec = []
         for row in self.db.curr.execute("SELECT * FROM cardList WHERE usr = ?",(str(id),)).fetchall():
             rec.append(row[0])
         return rec
+
+    def deleteCard(self, id, card_name):
+        self.db.curr.execute("DELETE FROM cardList WHERE usr = ? AND card_name = ?", (str(id), card_name))
+        self.db.conn.commit()
