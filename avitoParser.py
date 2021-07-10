@@ -71,7 +71,10 @@ class AvitoParser:
         return int(pc.string.strip()) if pc is not None else 0
 
     def getAds(self, url: str, sellerRating: float):
-        soup = BeautifulSoup(getResponse(url).text, 'lxml')
+        r = self.session.get(url) #
+        if r.status_code != 200:
+            r = getResponse(url)
+        soup = BeautifulSoup(r.text, 'lxml')
         ad_count = self.getAdsCount(soup)
         pages_count = 1
 
@@ -94,7 +97,10 @@ class AvitoParser:
             pages_count += 1
             cur_url = url[:-1] + str(pages_count)
             ad_c -= 50
-            soup = BeautifulSoup(getResponse(cur_url).text, 'lxml')
+            r = self.session.get(url)
+            if r.status_code != 200:
+                r = getResponse(url)
+            soup = BeautifulSoup(r.text, 'lxml')
 
     def parseAd(self, ad: bs4.element.Tag):
         link = ad.select_one('a.link-link-39EVK')
