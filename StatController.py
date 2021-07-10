@@ -84,7 +84,7 @@ def buildAvgPriceChart(chip: str):
 def getMonitoringStat():
     chips = dbh.getChips()
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(chips)) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=30) as executor:
         fav = list(executor.map(collectData, chips))
 
 
@@ -137,6 +137,6 @@ def prepareChipToMonitor(chip: str):
 def getFavsWithStatus(id: int):
     ads = dbh.getFavourites(id)
     ap = AvitoParser()
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(ads)) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=30) as executor:
         favs = list(executor.map(ap.isAvailable, ads))
     return favs
