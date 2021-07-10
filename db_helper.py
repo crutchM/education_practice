@@ -182,7 +182,7 @@ class db_helper:
         self.db.curr.execute("UPDATE users set role = ? where id = ?", (role, id))
         self.db.conn.commit()
     def delFromFav(self, user, link):
-        self.db.currexecute("DELETE FROM favourites WHERE usr = ? AND link = ?", (user, link))
+        self.db.curr.execute("DELETE FROM favourites WHERE usr = ? AND link = ?", (user, link))
         self.db.conn.commit()
 
     def getFavouritesTuple(self):
