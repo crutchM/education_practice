@@ -80,31 +80,33 @@ def buildAvgPriceChart(chip: str):
     return png
 
 
-def getMonitoringStat():  # херня сама записывает стату из списка мониторинга в две таблицы
-    locations = ['челябинская_область', 'россия']
+def getMonitoringStat():
     chips = dbh.getChips()
 
-    for chip in chips:
-        averages = []  # первое среднее челябы для чипа, второе для россии
-        spread_values = []  # первое разброс челябы для чипа, второе для россии
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(chips)) as executor:
+        fav = list(executor.map(collectData, chips))
 
-        for loc in locations:
-            temp_chip = prepareChipToMonitor(chip)
-            q = Query(chipName=temp_chip)
-            ads = attachLists(q.getAds(loc))
-            avg = 0
-            values = ''
 
-            for ad in ads:
-                cost = ad.cost
-                if cost is not None:
-                    avg += ad.cost
-                    values += str(cost) + ' '
-            averages.append(avg)
-            spread_values.append(values)
-        dbh.setValToSpread(chip, values_chel=spread_values[0], values_rus=spread_values[1])
-        dbh.addToPriceStat(chip, avg_chel=averages[0], avg_rus=averages[1])
+def collectData(chip: str):
+    averages = []  # первое среднее челябы для чипа, второе для россии
+    spread_values = []  # первое разброс челябы для чипа, второе для россии
+    locations = ['челябинская_область', 'россия']
+    for loc in locations:
+        temp_chip = prepareChipToMonitor(chip)
+        q = Query(chipName=temp_chip)
+        ads = attachLists(q.getAds(loc))
+        avg = 0
+        values = ''
 
+        for ad in ads:
+            cost = ad.cost
+            if cost is not None:
+                avg += ad.cost
+                values += str(cost) + ' '
+        averages.append(avg)
+        spread_values.append(values)
+    dbh.setValToSpread(chip, values_chel=spread_values[0], values_rus=spread_values[1])
+    dbh.addToPriceStat(chip, avg_chel=averages[0], avg_rus=averages[1])
 
 def getFavouritesStat():
     fav = dbh.getFavourites() #получаю список избранного из бд 0-id,  1-usr , 2-link TEXT,  3-price, 4-name TEXT,
