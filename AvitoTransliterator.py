@@ -3,7 +3,7 @@ class Transliterator:
               'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n',
               'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'h',
               'ц': 'c', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch', 'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e',
-              'ю': 'u', 'я': 'ya', '-': '_', ' ': ''}
+              'ю': 'u', 'я': 'ya', '-': '_', ' ': '_', '_': '_'}
 
     @staticmethod
     def transliterate(text: str):
@@ -11,3 +11,4 @@ class Transliterator:
         for letter in text.lower():
             result.append(Transliterator.letters[letter])
         return "".join(result)
+
