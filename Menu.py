@@ -8,7 +8,7 @@ from Query import Query
 from Ad import Advertisement
 import StatController as sc
 import ChipsToMonitor as chips
-
+#ehm
 bot = telebot.TeleBot('1860264884:AAGUDK2euWD_2UswRfGzyc_i-Hqz0MTJu7o')
 sort = {'По умолчанию': 101, 'Дешевле': 1, 'Дороже': 2, 'По дате (новые)': 104}
 testInc = 0
