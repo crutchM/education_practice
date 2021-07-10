@@ -35,7 +35,6 @@ class db_helper:
             recordslist.append(Advertisement(cost=row[3], name=row[4], link=row[2]))
         return recordslist
 
-
     def getQuriesHistory(self, userid):
         self.db.curr.execute("SELECT * FROM queries WHERE usr = ?;", (str(userid),))
         records = self.db.curr.fetchall()
@@ -51,18 +50,25 @@ class db_helper:
         unic_date = []
         u_date = []# format yyyy-mm-dd
         for row in records:
-            d = datetime.datetime.strptime(datetime.datetime.strftime(datetime.datetime.strptime(row[7],"%Y-%m-%d-%H:%M:%S"), "%y-%m-%d"), "%y-%m-%d")
+            d = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S").strftime("%y-%m-%d")
             d1 = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S")
-            if d not in unic_date:
-                unic_date.append(d)
+            if d1 not in u_date:
                 u_date.append(d1)
+                if d not in unic_date:
+                    unic_date.append(d)
         stat = []
-        for i in range(0, len(u_date)):
-            stat.append((unic_date[i], self.getCountByDate(u_date[i])))
+        for i in range(0, len(unic_date)):
+            stat.append((unic_date[i], self.getCountByDate(unic_date[i])))
         return stat
 
     def getCountByDate(self, date):
-        return int(self.db.curr.execute("SELECT count(*) FROM queries where qdate = ?", (str(date),)).fetchall())
+        rec = self.db.curr.execute("SELECT * FROM queries").fetchall()
+        count = 0
+        for row in rec:
+            d = datetime.datetime.strptime(row[7], "%Y-%m-%d-%H:%M:%S").strftime("%y-%m-%d")
+            if  d == date:
+                count += 1
+        return count
 
     def getLocation(self, id):
         self.db.curr.execute("SELECT location FROM users WHERE id = ?;", (str(id),))
@@ -237,6 +243,3 @@ class db_helper:
     def deleteCard(self, id, card_name):
         self.db.curr.execute("DELETE FROM cardList WHERE usr = ? AND card_name = ?", (str(id), card_name))
         self.db.conn.commit()
-
-
-
