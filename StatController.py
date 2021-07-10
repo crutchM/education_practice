@@ -9,7 +9,7 @@ import concurrent.futures
 dbh = db_helper()
 
 
-def buildPriceSpreadChart(chip: str):  # график разброса ценыы
+def buildPriceSpreadChart(chip: str):  # график разброса цены
     values = dbh.getSpreadVal(chip)  # 0 рос 1 чел
     stat = [values[1], values[0]]
     label = ['Челябинская область', 'Россия']
