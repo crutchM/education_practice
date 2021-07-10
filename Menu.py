@@ -7,6 +7,7 @@ import datetime
 from Query import Query
 from Ad import Advertisement
 import StatController as sc
+import ChipsToMonitor as chips
 
 bot = telebot.TeleBot('1860264884:AAGUDK2euWD_2UswRfGzyc_i-Hqz0MTJu7o')
 sort = {'По умолчанию': 101, 'Дешевле': 1, 'Дороже': 2, 'По дате (новые)': 104}
@@ -168,18 +169,115 @@ def chooseStreet(message, city, msge):
 
 
 def registerUser(message, location):
-    dba.addUser(message.chat.id, 'admin', location, regDate=getCorrectDate())
+    dba.addUser(message.chat.id, 'admin', location)
+    for chip in chips.chips:
+        dba.addCard(message.chat.id, chip)
+        dba.setValToSpread(chip, "0", "0")
 
 
 def chipMonitoring(message):
+    myChips = [i.split('+') for i in dba.getChipsByID(message.chat.id)]
+    myChipsInDB = dba.getChipsByID(message.chat.id)
+    myChipsForAdding = []
+    for chip in chips.chips:
+        if chip not in myChipsInDB:
+            myChipsForAdding.append(chip)
     if message.text == "Добавить чип":
-        pass
+        selectAddingChip(message, myChipsForAdding)
     elif message.text == "Удалить чип":
-        pass
-    elif message.text == "Статистика по чипу":
-        pass
+        selectRemovingChip(message, myChips)
+    elif message.text == "Статистика по чипу" and len(myChips) != 0:
+        selectChip(message, myChips)
     else:
-        pass
+        bot.clear_step_handler_by_chat_id(message.chat.id)
+        msg = bot.send_message(message.chat.id, "Вы перешли в главное меню")
+        message.text = '/start'
+        bot.register_next_step_handler(msg, mainMenu)
+        mainMenu(message)
+
+
+def selectAddingChip(message,myChips):
+    chipsString = ''
+    for i in range(0, len(myChips)):
+        chipsString += str(i) + ". " + myChips[i] + " "
+        if i % 2 == 0:
+            chipsString += '\n'
+    if chipsString == "":
+        bot.clear_step_handler_by_chat_id(message.chat.id)
+        msg = bot.send_message(message.chat.id, "У вас полный набор чипов!")
+        message.text = '/start'
+        bot.register_next_step_handler(msg, mainMenu)
+        mainMenu(message)
+    else:
+        bot.send_message(message.chat.id, 'Список чипов, которые можно добавить: ' + '\n' + chipsString)
+        msg = bot.send_message(message.chat.id, 'Введите номер чипа, который хотите добавить', reply_markup=types.ReplyKeyboardRemove())
+        bot.register_next_step_handler(msg, addChip, myChips)
+
+
+def addChip(message, myChips):
+    if message.text.isdigit() and int(message.text) >= 0 and int(message.text) < len(myChips):
+        chip = myChips[int(message.text)]
+        dba.addCard(message.chat.id, chip)
+        bot.clear_step_handler_by_chat_id(message.chat.id)
+        msg = bot.send_message(message.chat.id, "Добавлено!")
+        message.text = '/start'
+        bot.register_next_step_handler(msg, mainMenu)
+        mainMenu(message)
+    else:
+        bot.clear_step_handler_by_chat_id(message.chat.id)
+        msg = bot.send_message(message.chat.id, "Вы ввели число не из диапазона")
+        message.text = '/start'
+        bot.register_next_step_handler(msg, mainMenu)
+        mainMenu(message)
+
+
+def selectRemovingChip(message, myChips):
+    msg = bot.send_message(message.chat.id, 'Введите номер чипа, который хотите удалить')
+    bot.register_next_step_handler(msg, removeChip, myChips)
+
+
+
+def removeChip(message, myChips):
+    if message.text.isdigit() and int(message.text) >= 0 and int(message.text) < len(myChips):
+        chip = dba.getChipsByID(message.chat.id)[int(message.text)]
+        dba.deleteCard(message.chat.id, chip)
+        bot.clear_step_handler_by_chat_id(message.chat.id)
+        msg = bot.send_message(message.chat.id, "Удалено!")
+        message.text = '/start'
+        bot.register_next_step_handler(msg, mainMenu)
+        mainMenu(message)
+    else:
+        bot.clear_step_handler_by_chat_id(message.chat.id)
+        msg = bot.send_message(message.chat.id, "Вы ввели число не из диапазона")
+        message.text = '/start'
+        bot.register_next_step_handler(msg, mainMenu)
+        mainMenu(message)
+
+
+def selectChip(message, myChips):
+    msg = bot.send_message(message.chat.id, 'Введите номер чипа, статистика которого вас интересует')
+    bot.register_next_step_handler(msg, getChipStat, myChips)
+
+
+def getChipStat(message, myChips):
+    if message.text.isdigit() and int(message.text) > 0 and int(message.text) < len(myChips):
+        chip = dba.getChipsByID(message.chat.id)[int(message.text)]
+        sc.buildAvgPriceChart(chip)
+        bot.send_photo(message.chat.id, photo=open('huita.png', 'rb'))
+        sc.buildPriceSpreadChart(chip)
+        bot.send_photo(message.chat.id, photo=open('huita.png', 'rb'))
+        bot.clear_step_handler_by_chat_id(message.chat.id)
+        msg = bot.send_message(message.chat.id, "Вы перешли в главное меню")
+        message.text = '/start'
+        bot.register_next_step_handler(msg, mainMenu)
+        mainMenu(message)
+    else:
+        bot.clear_step_handler_by_chat_id(message.chat.id)
+        msg = bot.send_message(message.chat.id, "Вы ввели число не из диапазона")
+        message.text = '/start'
+        bot.register_next_step_handler(msg, mainMenu)
+        mainMenu(message)
+
 
 
 def mainMenu(message):
@@ -487,6 +585,16 @@ def mainMenu(message):
         markup.add(itembtn1, itembtn2, itembtn3)
         markup.add(itembtn4)
         msg = bot.send_message(message.chat.id, "Вы в меню выбора чипов", reply_markup=markup)
+        myChips = [i.split('+') for i in dba.getChipsByID(message.chat.id)]
+        chipsString = ""
+        for i in range(0, len(myChips)):
+            chipsString += str(i) + ". " + myChips[i][0] + " "
+            if i % 2 == 0:
+                chipsString += '\n'
+        if chipsString == "":
+            bot.send_message(message.chat.id, 'Вы не следите ни за одним чипом')
+        else:
+            bot.send_message(message.chat.id, 'Список отслеживаемых чипов: ' + '\n' + chipsString)
         bot.register_next_step_handler(msg, chipMonitoring)
 
     elif message.text.lower() == 'избранное':
