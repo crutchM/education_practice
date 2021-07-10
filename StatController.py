@@ -25,9 +25,10 @@ def buildPriceSpreadChart(chip: str):  # график разброса цены
 
     plt.xlabel("Стоимость")
     plt.title("Разброс цен на видеокарты")
-    png = plt.savefig('huita.png')
+    plt.legend()
+    g = plt.savefig('huita.png')
     plt.clf()
-    return png
+    return g
 
 
 def buildHistChart(date: list, values: list, ylabel: str, title: str):  # график изменения цены со временем
