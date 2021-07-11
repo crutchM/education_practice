@@ -8,7 +8,6 @@ from Query import Query
 from Ad import Advertisement
 import StatController as sc
 import ChipsToMonitor as chips
-#ehm
 bot = telebot.TeleBot('1860264884:AAGUDK2euWD_2UswRfGzyc_i-Hqz0MTJu7o')
 sort = {'По умолчанию': 101, 'Дешевле': 1, 'Дороже': 2, 'По дате (новые)': 104}
 testInc = 0
@@ -36,6 +35,8 @@ def start(message):
         bot.register_next_step_handler(msg, mainMenu)
         mainMenu(message)
     else:
+        bot.send_message(message.chat.id, 'В данном телеграм-боте вы можете искать объявления на авито, добавлять их в список избранного и отслеживать их доступность на текущий момент. Также вы можете сравнивать разброс цены на видеокарты по России и Челябинской области, ну и некоторые другие вещи.')
+        bot.send_photo(message.chat.id, 'https://i.imgur.com/aOqLsyt.png')
         bot.send_message(message.chat.id, 'Добро пожаловать')
         bot.send_message(message.chat.id, 'Укажите город')
         msg = bot.send_message(message.chat.id, "Пример: Челябинск")
@@ -598,17 +599,22 @@ def mainMenu(message):
         bot.register_next_step_handler(msg, chipMonitoring)
 
     elif message.text.lower() == 'избранное':
-        advList = dba.getFavourites(message.chat.id)
+        advList = sc.getFavsWithStatus(message.chat.id)
         if len(advList) == 0:
             msg = bot.send_message(message.chat.id, 'Список избранного пуст')
             bot.register_next_step_handler(msg, mainMenu)
         else:
             msg = bot.send_message(message.chat.id, "Ваше избранное:")
             for adv in advList:
+                status = ""
+                if adv[1]:
+                    status = "Продается"
+                else:
+                    status = "Продано"
                 removebtn = types.InlineKeyboardButton(text='Удалить', callback_data="remove")
                 markup = types.InlineKeyboardMarkup()
                 markup.add(removebtn)
-                bot.send_message(msg.chat.id, adv.show(), reply_markup=markup)
+                bot.send_message(msg.chat.id,status + '\n' + adv[0].show(), reply_markup=markup)
             bot.register_next_step_handler(msg, mainMenu)
     elif message.text.lower() == 'история':
         queriesHistory = ""
@@ -725,7 +731,7 @@ def doSearch(message, advList, index):
 def addAdvinFvr(call):
     if call.data == 'remove':
         adv = call.message.text.split('\n')
-        dba.delFromFav(call.message.chat.id, adv[4])
+        dba.delFromFav(call.message.chat.id, adv[5])
         bot.delete_message(call.message.chat.id, call.message.id)
         bot.send_message(call.message.chat.id, 'Удалено!')
 
