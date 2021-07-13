@@ -1,9 +1,5 @@
-import random
-
-import pylab as pl
 from avitoParser import AvitoParser
 from Query import Query
-from Ad import Adverticement
 from db_helper import db_helper
 import numpy as np
 import scipy.stats as stats
@@ -34,6 +30,7 @@ def buildPriceSpreadChart(chip: str):  # график разброса цены
 
 
 def buildHistChart(date: list, values: list, ylabel: str, title: str):  # график изменения цены со временем
+
     plt.plot(date, values)
 
     plt.xlabel("День")
